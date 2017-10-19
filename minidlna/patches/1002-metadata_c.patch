@@ -1,0 +1,17 @@
+Index: minidlna-1.1.4/metadata.c
+===================================================================
+--- minidlna-1.1.4.orig/metadata.c	2014-08-27 05:09:22.000000000 +0800
++++ minidlna-1.1.4/metadata.c	2017-10-10 10:14:43.728550596 +0800
+@@ -301,12 +301,6 @@
+ 		strcpy(type, "mp3");
+ 		m.mime = strdup("audio/mpeg");
+ 	}
+-	else if( ends_with(path, ".m4a") || ends_with(path, ".mp4") ||
+-	         ends_with(path, ".aac") || ends_with(path, ".m4p") )
+-	{
+-		strcpy(type, "aac");
+-		m.mime = strdup("audio/mp4");
+-	}
+ 	else if( ends_with(path, ".3gp") )
+ 	{
+ 		strcpy(type, "aac");

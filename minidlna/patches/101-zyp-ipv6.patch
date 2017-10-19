@@ -1,0 +1,4230 @@
+diff -Nur a/albumart.c b/albumart.c
+--- a/albumart.c	2017-10-09 14:43:31.464669732 +0800
++++ b/albumart.c	2017-10-09 17:40:00.294439371 +0800
+@@ -42,7 +42,7 @@
+ static int
+ art_cache_exists(const char *orig_path, char **cache_file)
+ {
+-	if( xasprintf(cache_file, "%s/art_cache%s", db_path, orig_path) < 0 )
++	if( xasprintf(cache_file, "%s/art_cachev6%s", db_path, orig_path) < 0 )
+ 		return 0;
+ 
+ 	strcpy(strchr(*cache_file, '\0')-4, ".jpg");
+diff -Nur a/avahi.c b/avahi.c
+--- a/avahi.c	2017-10-09 14:43:31.472669686 +0800
++++ b/avahi.c	2017-10-09 17:40:00.294439371 +0800
+@@ -24,7 +24,7 @@
+ #include <config.h>
+ 
+ #if defined(TIVO_SUPPORT) && defined(HAVE_AVAHI)
+-
++/*
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -45,11 +45,11 @@
+ 	AvahiEntryGroup   *group;
+ } ctx;
+ 
+-/*****************************************************************
+- * Private functions
+- *****************************************************************/
+ 
+-/* Called when publishing of service data completes */
++ //Private functions
++
++
++// Called when publishing of service data completes 
+ static void publish_reply(AvahiEntryGroup *g,
+ 			  AvahiEntryGroupState state,
+ 			  AVAHI_GCC_UNUSED void *userdata)
+@@ -58,11 +58,11 @@
+ 
+ 	switch (state) {
+ 	case AVAHI_ENTRY_GROUP_ESTABLISHED:
+-		/* The entry group has been established successfully */
++		// The entry group has been established successfully 
+ 		DPRINTF(E_MAXDEBUG, L_SSDP, "publish_reply: AVAHI_ENTRY_GROUP_ESTABLISHED\n");
+ 		break;
+ 	case AVAHI_ENTRY_GROUP_COLLISION:
+-		/* With multiple names there's no way to know which one collided */
++		// With multiple names there's no way to know which one collided 
+ 		DPRINTF(E_ERROR, L_SSDP, "publish_reply: AVAHI_ENTRY_GROUP_COLLISION: %s\n",
+ 				avahi_strerror(avahi_client_errno(ctx.client)));
+ 		avahi_threaded_poll_quit(ctx.threaded_poll);
+@@ -101,7 +101,7 @@
+ 	return ret;
+ }
+ 
+-/* Try to register the TiVo DNS SRV service type. */
++// Try to register the TiVo DNS SRV service type. 
+ static void
+ register_stuff(void)
+ {
+@@ -143,8 +143,8 @@
+ 
+ 	switch (state) {
+ 	case AVAHI_CLIENT_S_RUNNING:
+-		/* The server has started up successfully and registered its host
+-		* name on the network, so it's time to create our services */
++		 //The server has started up successfully and registered its host
++		//name on the network, so it's time to create our services 
+ 		register_stuff();
+ 		break;
+ 	case AVAHI_CLIENT_S_COLLISION:
+@@ -161,7 +161,7 @@
+ 			ctx.client = NULL;
+ 			ctx.group = NULL;
+ 
+-			/* Reconnect to the server */
++			// Reconnect to the server 
+ 			ctx.client = avahi_client_new(
+ 					avahi_threaded_poll_get(ctx.threaded_poll),
+ 					AVAHI_CLIENT_NO_FAIL, client_callback,
+@@ -187,14 +187,14 @@
+ 	}
+ }
+ 
+-/************************************************************************
+- * Public funcions
+- ************************************************************************/
+ 
+-/*
+- * Tries to shutdown this loop impl.
+- * Call this function from inside this thread.
+- */
++ //Public funcions
++
++
++
++//Tries to shutdown this loop impl.
++//Call this function from inside this thread.
++
+ void tivo_bonjour_unregister(void)
+ {
+ 	DPRINTF(E_DEBUG, L_SSDP, "tivo_bonjour_unregister\n");
+@@ -212,20 +212,20 @@
+ 		avahi_threaded_poll_free(ctx.threaded_poll);
+ }
+ 
+-/*
+- * Tries to setup the Zeroconf thread and any
+- * neccessary config setting.
+- */
++
++  //Tries to setup the Zeroconf thread and any
++ // neccessary config setting.
++
+ void tivo_bonjour_register(void)
+ {
+ 	int error;
+ 
+-	/* first of all we need to initialize our threading env */
++	// first of all we need to initialize our threading env 
+ 	ctx.threaded_poll = avahi_threaded_poll_new();
+ 	if (!ctx.threaded_poll)
+ 		return;
+ 
+-	/* now we need to acquire a client */
++	//now we need to acquire a client 
+ 	ctx.client = avahi_client_new(avahi_threaded_poll_get(ctx.threaded_poll),
+ 			AVAHI_CLIENT_NO_FAIL, client_callback, NULL, &error);
+ 	if (!ctx.client)
+@@ -245,4 +245,5 @@
+ 	else
+ 		DPRINTF(E_INFO, L_SSDP, "Successfully started avahi loop\n");
+ }
++*/
+ #endif /* HAVE_AVAHI */
+diff -Nur a/avahi.h b/avahi.h
+--- a/avahi.h	2017-10-09 14:43:31.472669686 +0800
++++ b/avahi.h	2017-10-09 17:40:00.294439371 +0800
+@@ -1,9 +1,11 @@
+ #include "config.h"
+ 
+ #if defined(TIVO_SUPPORT) && defined(HAVE_AVAHI)
++/*
+ void tivo_bonjour_register(void);
+ void tivo_bonjour_unregister(void);
+ #else
+ static inline void tivo_bonjour_register(void) {};
+ static inline void tivo_bonjour_unregister(void) {};
++*/
+ #endif
+diff -Nur a/clients.c b/clients.c
+--- a/clients.c	2017-10-09 14:43:31.472669686 +0800
++++ b/clients.c	2017-10-09 17:40:00.294439371 +0800
+@@ -17,6 +17,8 @@
+  */
+ #include <stdio.h>
+ #include <string.h>
++#include <strings.h>
++
+ #include <time.h>
+ 
+ #include "clients.h"
+@@ -301,20 +303,68 @@
+ 
+ struct client_cache_s clients[CLIENT_CACHE_SLOTS];
+ 
++static int ipv6_equal(unsigned char *addr1,unsigned  char *addr2)  
++{  
++    int i = 0;  
++
++    for (i = 0; i < 16; i++) {   
++        if (addr1[i] != addr2[i]) {  
++            return 0;  
++        }     
++    }  
++    return 1;  
++}
++
+ struct client_cache_s *
+-SearchClientCache(struct in_addr addr, int quiet)
++SearchClientCacheV4(struct in_addr addr, int quiet)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < CLIENT_CACHE_SLOTS; i++)
+ 	{
+-		if (clients[i].addr.s_addr == addr.s_addr)
++		if (clients[i].addr4.s_addr == addr.s_addr)
++		{
++			/* Invalidate this client cache if it's older than 1 hour */
++			if ((time(NULL) - clients[i].age) > 3600)
++			{
++				unsigned char mac[6];
++				if (get_remote_macV4(addr, mac) == 0 &&
++				    memcmp(mac, clients[i].mac, 6) == 0)
++				{
++					/* Same MAC as last time when we were able to identify the client,
++					 * so extend the timeout by another hour. */
++					clients[i].age = time(NULL);
++				}
++				else
++				{
++					memset(&clients[i], 0, sizeof(struct client_cache_s));
++					return NULL;
++				}
++			}
++			if (!quiet)
++				DPRINTF(E_DEBUG, L_HTTP, "Client found in cache. [%s/entry %d]\n",
++					clients[i].type->name, i);
++			return &clients[i];
++		}
++	}
++
++	return NULL;
++}
++
++struct client_cache_s *
++SearchClientCacheV6(struct in6_addr addr, int quiet)
++{
++	int i;
++    char addr6[INET6_ADDRSTRLEN];
++	for (i = 0; i < CLIENT_CACHE_SLOTS; i++)
++	{
++		if (ipv6_equal(clients[i].addr6.s6_addr, addr.s6_addr))
+ 		{
+ 			/* Invalidate this client cache if it's older than 1 hour */
+ 			if ((time(NULL) - clients[i].age) > 3600)
+ 			{
+ 				unsigned char mac[6];
+-				if (get_remote_mac(addr, mac) == 0 &&
++				if (get_remote_macV6(addr, mac) == 0 &&
+ 				    memcmp(mac, clients[i].mac, 6) == 0)
+ 				{
+ 					/* Same MAC as last time when we were able to identify the client,
+@@ -330,6 +380,10 @@
+ 			if (!quiet)
+ 				DPRINTF(E_DEBUG, L_HTTP, "Client found in cache. [%s/entry %d]\n",
+ 					clients[i].type->name, i);
++			inet_ntop(AF_INET6,&addr,addr6,sizeof(addr6));
++			DPRINTF(E_DEBUG, L_HTTP, "IP %s MAC [%02X:%02X:%02X:%02X:%02X:%02X]  %d.\n",addr6,
++					clients[i].mac[0], clients[i].mac[1], clients[i].mac[2],
++					clients[i].mac[3], clients[i].mac[4], clients[i].mac[5], i);
+ 			return &clients[i];
+ 		}
+ 	}
+@@ -338,20 +392,49 @@
+ }
+ 
+ struct client_cache_s *
+-AddClientCache(struct in_addr addr, int type)
++AddClientCacheV4(struct in_addr addr, int type)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < CLIENT_CACHE_SLOTS; i++)
+ 	{
+-		if (clients[i].addr.s_addr)
++		if (clients[i].addr4.s_addr)
+ 			continue;
+-		get_remote_mac(addr, clients[i].mac);
+-		clients[i].addr = addr;
++		get_remote_macV4(addr, clients[i].mac);
++		clients[i].addr4 = addr;
+ 		clients[i].type = &client_types[type];
+ 		clients[i].age = time(NULL);
++		clients[i].client_type = 4;
+ 		DPRINTF(E_DEBUG, L_HTTP, "Added client [%s/%s/%02X:%02X:%02X:%02X:%02X:%02X] to cache slot %d.\n",
+-					client_types[type].name, inet_ntoa(clients[i].addr),
++					client_types[type].name, inet_ntoa(clients[i].addr4),
++					clients[i].mac[0], clients[i].mac[1], clients[i].mac[2],
++					clients[i].mac[3], clients[i].mac[4], clients[i].mac[5], i);
++		return &clients[i];
++	}
++
++	return NULL;
++}
++
++struct client_cache_s *
++AddClientCacheV6(struct in6_addr addr, int type)
++{
++	int i;
++    char buf[INET6_ADDRSTRLEN];
++    inet_ntop(AF_INET6,&addr,buf,sizeof(buf));
++    if(strncasecmp(buf,"fe80",4))
++        return NULL;
++	for (i = 0; i < CLIENT_CACHE_SLOTS; i++)
++	{   
++		if (clients[i].type)
++			continue;
++		get_remote_macV6(addr, clients[i].mac);
++		//clients[i].addr = addr;
++		memcpy(clients[i].addr6.s6_addr,addr.s6_addr,16);
++		clients[i].type = &client_types[type];
++		clients[i].age = time(NULL);
++		clients[i].client_type = 6;
++		DPRINTF(E_DEBUG, L_HTTP, "Added client [%s/%02X:%02X:%02X:%02X:%02X:%02X] to cache slot %d.\n",
++					client_types[type].name,
+ 					clients[i].mac[0], clients[i].mac[1], clients[i].mac[2],
+ 					clients[i].mac[3], clients[i].mac[4], clients[i].mac[5], i);
+ 		return &clients[i];
+diff -Nur a/clients.h b/clients.h
+--- a/clients.h	2017-10-09 14:43:31.472669686 +0800
++++ b/clients.h	2017-10-09 17:40:00.294439371 +0800
+@@ -94,17 +94,22 @@
+ };
+ 
+ struct client_cache_s {
+-	struct in_addr addr;
++	struct in6_addr addr6;
++	struct in_addr addr4;
+ 	unsigned char mac[6];
+ 	struct client_type_s *type;
+ 	time_t age;
+ 	int connections;
++	int client_type;
+ };
+ 
+ extern struct client_type_s client_types[];
+ extern struct client_cache_s clients[CLIENT_CACHE_SLOTS];
+ 
+-struct client_cache_s *SearchClientCache(struct in_addr addr, int quiet);
+-struct client_cache_s *AddClientCache(struct in_addr addr, int type);
++struct client_cache_s *SearchClientCacheV4(struct in_addr addr, int quiet);
++struct client_cache_s *SearchClientCacheV6(struct in6_addr addr, int quiet);
++
++struct client_cache_s *AddClientCacheV4(struct in_addr addr, int type);
++struct client_cache_s *AddClientCacheV6(struct in6_addr addr, int type);
+ 
+ #endif
+diff -Nur a/getifaddr.c b/getifaddr.c
+--- a/getifaddr.c	2017-10-09 14:43:31.488669596 +0800
++++ b/getifaddr.c	2017-10-09 17:40:00.294439371 +0800
+@@ -29,6 +29,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <strings.h>
+ #include <unistd.h>
+ #include <sys/ioctl.h>
+ #include <sys/types.h>
+@@ -71,8 +72,11 @@
+ {
+ #if HAVE_GETIFADDRS
+ 	struct ifaddrs *ifap, *p;
+-	struct sockaddr_in *addr_in;
+-
++	struct sockaddr_in *addr_in4;
++	struct sockaddr_in6 *addr_in6;
++	int addr_flag=0;
++    char addr6[INET6_ADDRSTRLEN]={0};
++    
+ 	if (getifaddrs(&ifap) != 0)
+ 	{
+ 		DPRINTF(E_ERROR, L_GENERAL, "getifaddrs(): %s\n", strerror(errno));
+@@ -81,37 +85,74 @@
+ 
+ 	for (p = ifap; p != NULL; p = p->ifa_next)
+ 	{
+-		if (!p->ifa_addr || p->ifa_addr->sa_family != AF_INET)
++		if (!p->ifa_addr)
+ 			continue;
+ 		if (ifname && strcmp(p->ifa_name, ifname) != 0)
+ 			continue;
+-		addr_in = (struct sockaddr_in *)p->ifa_addr;
+-		if (!ifname && (p->ifa_flags & (IFF_LOOPBACK | IFF_SLAVE)))
+-			continue;
+-		memcpy(&lan_addr[n_lan_addr].addr, &addr_in->sin_addr, sizeof(lan_addr[n_lan_addr].addr));
+-		if (!inet_ntop(AF_INET, &addr_in->sin_addr, lan_addr[n_lan_addr].str, sizeof(lan_addr[0].str)) )
+-		{
+-			DPRINTF(E_ERROR, L_GENERAL, "inet_ntop(): %s\n", strerror(errno));
+-			continue;
++		if(p->ifa_addr->sa_family == AF_INET){
++		    addr_in4 = (struct sockaddr_in *)p->ifa_addr;
++    		if (!ifname && (p->ifa_flags & (IFF_LOOPBACK | IFF_SLAVE)))
++    			continue;
++    		memcpy(&lan_addr[n_lan_addr].addr4, &addr_in4->sin_addr, sizeof(lan_addr[n_lan_addr].addr4));
++    		if (!inet_ntop(AF_INET, &addr_in4->sin_addr, lan_addr[n_lan_addr].str4, sizeof(lan_addr[0].str4)) )
++    		{
++    			DPRINTF(E_ERROR, L_GENERAL, "inet_ntop(): %s\n", strerror(errno));
++    			continue;
++    		}
++    		addr_in4 = (struct sockaddr_in *)p->ifa_netmask;
++    		memcpy(&lan_addr[n_lan_addr].mask4, &addr_in4->sin_addr, sizeof(lan_addr[n_lan_addr].mask4));
++    		lan_addr[n_lan_addr].ifindex = if_nametoindex(p->ifa_name);
++    		lan_addr[n_lan_addr].snotify4 = OpenAndConfSSDPNotifySocketV4(&lan_addr[n_lan_addr]);
++    		if(lan_addr[n_lan_addr].snotify4>=0)
++    		    addr_flag=addr_flag|0x01;
++    		if (n_lan_addr >= MAX_LAN_ADDR)
++    			break;
+ 		}
+-		addr_in = (struct sockaddr_in *)p->ifa_netmask;
+-		memcpy(&lan_addr[n_lan_addr].mask, &addr_in->sin_addr, sizeof(lan_addr[n_lan_addr].mask));
+-		lan_addr[n_lan_addr].ifindex = if_nametoindex(p->ifa_name);
+-		lan_addr[n_lan_addr].snotify = OpenAndConfSSDPNotifySocket(&lan_addr[n_lan_addr]);
+-		if (lan_addr[n_lan_addr].snotify >= 0)
+-			n_lan_addr++;
+-		if (ifname || n_lan_addr >= MAX_LAN_ADDR)
+-			break;
++		else if(p->ifa_addr->sa_family == AF_INET6){
++		    addr_in6 = (struct sockaddr_in6 *)p->ifa_addr;
++    		if (!ifname && (p->ifa_flags & (IFF_LOOPBACK | IFF_SLAVE)))
++    			continue;
++    		memset(addr6,0,INET6_ADDRSTRLEN);
++    		inet_ntop(AF_INET6,&addr_in6->sin6_addr,addr6,INET6_ADDRSTRLEN);
++    		if (strncasecmp(addr6,"FE80",4)){
++                memcpy(&lan_addr[n_lan_addr].addr6,&addr_in6->sin6_addr,sizeof(lan_addr[n_lan_addr].addr6));
++                inet_ntop(AF_INET6,&addr_in6->sin6_addr,lan_addr[n_lan_addr].g_str,sizeof(lan_addr[n_lan_addr].g_str));
++    		    continue;
++    		}
++    		memcpy(&lan_addr[n_lan_addr].addr6, &addr_in6->sin6_addr, sizeof(lan_addr[n_lan_addr].addr6));
++    		if (!inet_ntop(AF_INET6, &addr_in6->sin6_addr, lan_addr[n_lan_addr].str6, sizeof(lan_addr[n_lan_addr].str6)) )
++    		{
++    			DPRINTF(E_ERROR, L_GENERAL, "inet_ntop(): %s\n", strerror(errno));
++    			continue;
++    		}
++    		
++    		addr_in6 = (struct sockaddr_in6 *)p->ifa_netmask;
++    		
++    		memcpy(&lan_addr[n_lan_addr].mask6, &addr_in6->sin6_addr, sizeof(lan_addr[n_lan_addr].mask6));
++    		lan_addr[n_lan_addr].ifindex = if_nametoindex(p->ifa_name);
++    		lan_addr[n_lan_addr].snotify6 = OpenAndConfSSDPNotifySocketV6(&lan_addr[n_lan_addr]);
++    		if(lan_addr[n_lan_addr].snotify6>=0)
++    		    addr_flag=addr_flag|0x02;
++    		DPRINTF(E_ERROR, L_GENERAL, "interface:%s ipv4:%s\tipv6:%s gaddr:%s\n",
++    		runtime_vars.ifaces[n_lan_addr],lan_addr[n_lan_addr].str4,lan_addr[n_lan_addr].str6,lan_addr[n_lan_addr].g_str);
++    		if (n_lan_addr >= MAX_LAN_ADDR)
++    		    break;
++		}
++		if(addr_flag==0x03)
++		    break;
+ 	}
+ 	freeifaddrs(ifap);
+-	if (ifname && !p)
++	if(addr_flag)
++	    n_lan_addr++;
++	if (ifname && !p&&addr_flag==0)
+ 	{
+ 		DPRINTF(E_ERROR, L_GENERAL, "Network interface %s not found\n", ifname);
+ 		return -1;
+ 	}
+ #else
+-	int s = socket(PF_INET, SOCK_STREAM, 0);
+-	struct sockaddr_in addr;
++/*
++	int s = socket(PF_INET6, SOCK_STREAM, 0);
++	struct sockaddr_in6 addr;
+ 	struct ifconf ifc;
+ 	struct ifreq *ifr;
+ 	char buf[8192];
+@@ -164,7 +205,9 @@
+ 		DPRINTF(E_ERROR, L_GENERAL, "Network interface %s not found\n", ifname);
+ 		return -1;
+ 	}
++*/
+ #endif
++
+ 	return n_lan_addr;
+ }
+ 
+@@ -269,8 +312,20 @@
+ 	return ret;
+ }
+ 
++static int ipv6_equal(unsigned char *addr1,unsigned  char *addr2)  
++{  
++    int i = 0;  
++
++    for (i = 0; i < 16; i++) {   
++        if (addr1[i] != addr2[i]) {  
++            return 0;  
++        }     
++    }  
++    return 1;  
++}
++
+ int
+-get_remote_mac(struct in_addr ip_addr, unsigned char *mac)
++get_remote_macV4(struct in_addr ip_addr, unsigned char *mac)
+ {
+ 	struct in_addr arp_ent;
+ 	FILE * arp;
+@@ -304,17 +359,64 @@
+ 	return 0;
+ }
+ 
++int
++get_remote_macV6(struct in6_addr ip_addr, unsigned char *mac)
++{
++	struct in6_addr arp_ent;
++	FILE * arp;
++	char remote_ip[INET6_ADDRSTRLEN];
++	char buf[1024];
++	int matches;
++	char dev[16] = {0} , dev2[16] = {0},types[16] = {0};
++	char cmd[128] = {0};
++	memset(mac, 0xFF, 6);
++
++    sprintf(cmd,"ip -6 neigh | grep %s ",runtime_vars.ifaces[0]);
++	arp = popen(cmd, "r");
++	if (!arp)
++		return 1;
++	while (fgets(buf,1024,arp))
++	{
++		matches = sscanf(buf, "%s %s %s %s %2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx",
++		                      remote_ip, dev, dev2, types,
++		                      &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
++		if (matches != 10)
++			continue;
++		
++		inet_pton(AF_INET6, remote_ip, &arp_ent);
++		/*DPRINTF(E_DEBUG, L_HTTP,"IP:%s\tMAC:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx\n",remote_ip,
++		mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);*/
++
++		if (ipv6_equal(ip_addr.s6_addr,arp_ent.s6_addr))
++			break;
++		mac[0] = 0xFF;
++	}
++	pclose(arp);
++
++	if (mac[0] == 0xFF)
++	{
++		memset(mac, 0xFF, 6);
++		return 1;
++	}
++
++	return 0;
++}
++
+ void
+ reload_ifaces(int force_notify)
+ {
+-	struct in_addr old_addr[MAX_LAN_ADDR];
++	struct in_addr old_addr4[MAX_LAN_ADDR];
++	struct in6_addr old_addr6[MAX_LAN_ADDR];
+ 	int i, j;
+ 
+-	memset(&old_addr, 0xFF, sizeof(old_addr));
++	memset(&old_addr4, 0xFF, sizeof(old_addr4));
++	memset(&old_addr6, 0xFF, sizeof(old_addr6));
+ 	for (i = 0; i < n_lan_addr; i++)
+ 	{
+-		memcpy(&old_addr[i], &lan_addr[i].addr, sizeof(struct in_addr));
+-		close(lan_addr[i].snotify);
++		memcpy(&old_addr4[i], &lan_addr[i].addr4, sizeof(struct in_addr));
++		memcpy(&old_addr6[i], &lan_addr[i].addr6, sizeof(struct in6_addr));
++		close(lan_addr[i].snotify4);
++		close(lan_addr[i].snotify6);
+ 	}
+ 	n_lan_addr = 0;
+ 
+@@ -327,18 +429,24 @@
+ 	for (i = 0; i < n_lan_addr; i++)
+ 	{
+ 		for (j = 0; j < MAX_LAN_ADDR; j++)
+-		{
+-			if (memcmp(&lan_addr[i].addr, &old_addr[j], sizeof(struct in_addr)) == 0)
++		{   
++		    if ((memcmp(&lan_addr[i].addr4, &old_addr4[j], sizeof(struct in_addr))==0)&&
++		        (memcmp(&lan_addr[i].addr6, &old_addr6[j], sizeof(struct in6_addr))==0))
+ 				break;
+ 		}
+ 		/* Send out startup notifies if it's a new interface, or on SIGHUP */
+ 		if (force_notify || j == MAX_LAN_ADDR)
+ 		{
+-			DPRINTF(E_INFO, L_GENERAL, "Enabling interface %s/%s\n",
+-				lan_addr[i].str, inet_ntoa(lan_addr[i].mask));
+-			SendSSDPGoodbyes(lan_addr[i].snotify);
+-			SendSSDPNotifies(lan_addr[i].snotify, lan_addr[i].str,
++			DPRINTF(E_INFO, L_GENERAL, "Enabling interface:%s ipv4:%s ipv6:%s\n",runtime_vars.ifaces[i],lan_addr[i].str4,lan_addr[i].str6);
++				
++			SendSSDPGoodbyesV4(lan_addr[i].snotify4);
++			SendSSDPNotifiesV4(lan_addr[i].snotify4, lan_addr[i].str4,
+ 					runtime_vars.port, runtime_vars.notify_interval);
++            if(lan_addr[i].snotify6>0){
++			    SendSSDPGoodbyesV6(lan_addr[i].snotify6);
++		        SendSSDPNotifiesV6(lan_addr[i].snotify6, lan_addr[i].str6,
++					    runtime_vars.port, runtime_vars.notify_interval);
++			}
+ 		}
+ 	}
+ }
+diff -Nur a/getifaddr.h b/getifaddr.h
+--- a/getifaddr.h	2017-10-09 14:43:31.488669596 +0800
++++ b/getifaddr.h	2017-10-09 17:40:00.294439371 +0800
+@@ -39,7 +39,12 @@
+    (x[5] == 0x00))
+ 
+ int getsyshwaddr(char *buf, int len);
+-int get_remote_mac(struct in_addr ip_addr, unsigned char *mac);
++
++int get_remote_macV4(struct in_addr ip_addr, unsigned char *mac);
++
++int get_remote_macV6(struct in6_addr ip_addr, unsigned char *mac);
++
++
+ void reload_ifaces(int notify);
+ 
+ int OpenAndConfMonitorSocket();
+diff -Nur a/image_utils.c b/image_utils.c
+--- a/image_utils.c	2017-10-09 14:43:31.500669529 +0800
++++ b/image_utils.c	2017-10-09 17:40:00.294439371 +0800
+@@ -67,7 +67,21 @@
+ 	size_t sz;
+ 	size_t used;
+ };
+-
++static long
++rest_memery()
++{
++        struct sysinfo s_info;
++        int error;
++        long rest,total;
++
++        error = sysinfo(&s_info);
++        if(error != 0)
++                return -1;
++
++        rest = s_info.freeram;
++        total = s_info.totalram;
++        return rest - total * 0.1;
++}
+ /* Destination manager to store data in a buffer */
+ static void
+ my_dst_mgr_init(j_compress_ptr cinfo)
+@@ -409,13 +423,19 @@
+ 		return NULL;
+ 	}
+ 	vimage->width = width; vimage->height = height;
+-
+-	if((vimage->buf = (pix *)malloc(width * height * sizeof(pix))) == NULL)
+-	{
+-		DPRINTF(E_WARN, L_METADATA, "malloc failed\n");
+-		free(vimage);
+-		return NULL;
+-	}
++    DPRINTF(E_WARN, L_METADATA,"malloc:%u*%u*%u= %u bytes\n",width,height,sizeof(pix),width * height * sizeof(pix));
++    if(rest_memery() < 0){
++        free(vimage);
++        return NULL;
++       }
++    else{
++        if((vimage->buf = (pix *)malloc(width * height * sizeof(pix))) == NULL)
++            {
++                DPRINTF(E_WARN, L_METADATA, "malloc failed\n");
++                free(vimage);
++                return NULL;
++            }
++        }
+ 	return(vimage);
+ }
+ 
+@@ -453,6 +473,8 @@
+ 		return NULL;
+ 	}
+ 	jpeg_read_header(&cinfo, TRUE);
++	cinfo.scale_num = 1;
++	//cinfo.scale_denom = 4;
+ 	cinfo.scale_denom = scale;
+ 	cinfo.do_fancy_upsampling = FALSE;
+ 	cinfo.do_block_smoothing = FALSE;
+@@ -496,6 +518,7 @@
+ 	{
+ 		int rx, ry;
+ 		ofs = 0;
++		DPRINTF(E_WARN, L_METADATA, "malloc:%d*3*%d+16=%d\n", w,cinfo.rec_outbuf_height,w * 3 * cinfo.rec_outbuf_height + 16);
+ 		if((ptr = malloc(w * 3 * cinfo.rec_outbuf_height + 16)) == NULL)
+ 		{
+ 			DPRINTF(E_WARN, L_METADATA, "malloc failed\n");
+diff -Nur a/image_utils.h b/image_utils.h
+--- a/image_utils.h	2017-10-09 14:43:31.500669529 +0800
++++ b/image_utils.h	2017-10-09 17:40:00.294439371 +0800
+@@ -22,6 +22,7 @@
+  * along with MiniDLNA. If not, see <http://www.gnu.org/licenses/>.
+  */
+ #include <inttypes.h>
++#include <sys/sysinfo.h>
+ 
+ #define ROTATE_NONE 0x0
+ #define ROTATE_90   0x1
+diff -Nur a/metadata.c b/metadata.c
+--- a/metadata.c	2017-10-09 14:43:31.548669259 +0800
++++ b/metadata.c	2017-10-09 17:40:00.298439106 +0800
+@@ -1482,7 +1482,7 @@
+ video_no_dlna:
+ 
+ #ifdef TIVO_SUPPORT
+-	if( ends_with(path, ".TiVo") && is_tivo_file(path) )
++/*	if( ends_with(path, ".TiVo") && is_tivo_file(path) )
+ 	{
+ 		if( m.dlna_pn )
+ 		{
+@@ -1491,7 +1491,7 @@
+ 		}
+ 		m.mime = realloc(m.mime, 21);
+ 		strcpy(m.mime, "video/x-tivo-mpeg");
+-	}
++	}*/
+ #endif
+ 
+ 	strcpy(nfo, path);
+diff -Nur a/minidlna.c b/minidlna.c
+--- a/minidlna.c	2017-10-09 14:43:31.548669259 +0800
++++ b/minidlna.c	2017-10-09 17:40:00.298439106 +0800
+@@ -101,10 +101,11 @@
+ # define sqlite3_threadsafe() 0
+ #endif
+  
++ 
+ /* OpenAndConfHTTPSocket() :
+  * setup the socket used to handle incoming HTTP connections. */
+ static int
+-OpenAndConfHTTPSocket(unsigned short port)
++OpenAndConfHTTPSocketV4(unsigned short port)
+ {
+ 	int s;
+ 	int i = 1;
+@@ -144,6 +145,50 @@
+ 
+ 	return s;
+ }
++/* OpenAndConfHTTPSocket() :
++ * setup the socket used to handle incoming HTTP connections. */
++static int
++OpenAndConfHTTPSocketV6(unsigned short port)
++{
++	int s;
++	int i = 1;
++	struct sockaddr_in6 listenname;
++
++	/* Initialize client type cache */
++	memset(&clients, 0, sizeof(struct client_cache_s));
++
++	s = socket(PF_INET6, SOCK_STREAM, 0);
++	if (s < 0)
++	{
++		DPRINTF(E_ERROR, L_GENERAL, "socket(http): %s\n", strerror(errno));
++		return -1;
++	}
++
++	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i)) < 0)
++		DPRINTF(E_WARN, L_GENERAL, "setsockopt(http, SO_REUSEADDR): %s\n", strerror(errno));
++    if (setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&i, sizeof(i)) < 0)
++		DPRINTF(E_WARN, L_SSDP, "setsockopt(udp, IPV6_V6ONLY): %s\n", strerror(errno));
++	memset(&listenname, 0, sizeof(struct sockaddr_in6));
++	listenname.sin6_family = AF_INET6;
++	listenname.sin6_port = htons(port);
++	listenname.sin6_addr = in6addr_any;
++
++	if (bind(s, (struct sockaddr *)&listenname, sizeof(struct sockaddr_in6)) < 0)
++	{
++		DPRINTF(E_ERROR, L_GENERAL, "bind(http): %s\n", strerror(errno));
++		close(s);
++		return -1;
++	}
++
++	if (listen(s, 16) < 0)
++	{
++		DPRINTF(E_ERROR, L_GENERAL, "listen(http): %s\n", strerror(errno));
++		close(s);
++		return -1;
++	}
++
++	return s;
++}
+ 
+ /* Handler for the SIGTERM signal (kill) 
+  * SIGINT is also handled */
+@@ -261,7 +306,7 @@
+ 	char path[PATH_MAX];
+ 	struct stat st;
+ 
+-	snprintf(path, sizeof(path), "%s/files.db", db_path);
++	snprintf(path, sizeof(path), "%s/filesv6.db", db_path);
+ 	if (stat(path, &st) != 0)
+ 		return 0;
+ 	return st.st_mtime;
+@@ -273,7 +318,7 @@
+ 	char path[PATH_MAX];
+ 	int new_db = 0;
+ 
+-	snprintf(path, sizeof(path), "%s/files.db", db_path);
++	snprintf(path, sizeof(path), "%s/filesv6.db", db_path);
+ 	if (access(path, F_OK) != 0)
+ 	{
+ 		new_db = 1;
+@@ -343,7 +388,7 @@
+ rescan:
+ 		CLEARFLAG(RESCAN_MASK);
+ 		if (ret < 0)
+-			DPRINTF(E_WARN, L_GENERAL, "Creating new database at %s/files.db\n", db_path);
++			DPRINTF(E_WARN, L_GENERAL, "Creating new database at %s/filesv6.db\n", db_path);
+ 		else if (ret == 1)
+ 			DPRINTF(E_WARN, L_GENERAL, "New media_dir detected; rebuilding...\n");
+ 		else if (ret == 2)
+@@ -353,7 +398,7 @@
+ 				ret, DB_VERSION);
+ 		sqlite3_close(db);
+ 
+-		snprintf(cmd, sizeof(cmd), "rm -rf %s/files.db %s/art_cache", db_path, db_path);
++		snprintf(cmd, sizeof(cmd), "rm -rf %s/filesv6.db %s/art_cachev6", db_path, db_path);
+ 		if (system(cmd) != 0)
+ 			DPRINTF(E_FATAL, L_GENERAL, "Failed to clean old file cache!  Exiting...\n");
+ 
+@@ -855,7 +900,7 @@
+ 			SETFLAG(RESCAN_MASK);
+ 			break;
+ 		case 'R':
+-			snprintf(buf, sizeof(buf), "rm -rf %s/files.db %s/art_cache", db_path, db_path);
++			snprintf(buf, sizeof(buf), "rm -rf %s/filesv6.db %s/art_cachev6", db_path, db_path);
+ 			if (system(buf) != 0)
+ 				DPRINTF(E_FATAL, L_GENERAL, "Failed to clean old file cache. EXITING\n");
+ 			break;
+@@ -950,7 +995,7 @@
+ 		#else
+ 		if (access(db_path, F_OK) != 0)
+ 			make_dir(db_path, S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO);
+-		snprintf(buf, sizeof(buf), "%s/minidlna.log", log_path);
++		snprintf(buf, sizeof(buf), "%s/minidlna6.log", log_path);
+ 		path = buf;
+ 		#endif
+ 	}
+@@ -1017,7 +1062,9 @@
+ main(int argc, char **argv)
+ {
+ 	int ret, i;
+-	int shttpl = -1;
++	int shttpl4 = -1;
++	int shttpl6 = -1;
++	
+ 	int smonitor = -1;
+ 	LIST_HEAD(httplisthead, upnphttp) upnphttphead;
+ 	struct upnphttp * e = 0;
+@@ -1031,15 +1078,15 @@
+ 	pid_t scanner_pid = 0;
+ 	pthread_t inotify_thread = 0;
+ #ifdef TIVO_SUPPORT
+-	uint8_t beacon_interval = 5;
++/*	uint8_t beacon_interval = 5;
+ 	int sbeacon = -1;
+ 	struct sockaddr_in tivo_bcast;
+-	struct timeval lastbeacontime = {0, 0};
++	struct timeval lastbeacontime = {0, 0};*/
+ #endif
+-
++     
+ 	for (i = 0; i < L_MAX; i++)
+ 		log_level[i] = E_WARN;
+-
++    
+ 	ret = init(argc, argv);
+ 	if (ret != 0)
+ 		return 1;
+@@ -1050,7 +1097,7 @@
+ 	{
+ 		DPRINTF(E_WARN, L_GENERAL, "SQLite library is old.  Please use version 3.5.1 or newer.\n");
+ 	}
+-
++     
+ 	LIST_INIT(&upnphttphead);
+ 
+ 	ret = open_db(NULL);
+@@ -1074,25 +1121,37 @@
+ #endif
+ 	smonitor = OpenAndConfMonitorSocket();
+ 
+-	sssdp = OpenAndConfSSDPReceiveSocket();
+-	if (sssdp < 0)
++	sssdp4 = OpenAndConfSSDPReceiveSocketV4();
++	if (sssdp4 < 0)
+ 	{
+ 		DPRINTF(E_INFO, L_GENERAL, "Failed to open socket for receiving SSDP. Trying to use MiniSSDPd\n");
+ 		reload_ifaces(0);	/* populate lan_addr[0].str */
+-		if (SubmitServicesToMiniSSDPD(lan_addr[0].str, runtime_vars.port) < 0)
++		if (SubmitServicesToMiniSSDPD(lan_addr[0].str4, runtime_vars.port) < 0)
++			DPRINTF(E_FATAL, L_GENERAL, "Failed to connect to MiniSSDPd. EXITING");
++	}
++	sssdp6 = OpenAndConfSSDPReceiveSocketV6();
++	if (sssdp6 < 0)
++	{
++		DPRINTF(E_INFO, L_GENERAL, "Failed to open socket for receiving SSDP. Trying to use MiniSSDPd\n");
++		reload_ifaces(0);	/* populate lan_addr[0].str */
++		if (SubmitServicesToMiniSSDPD(lan_addr[0].str6, runtime_vars.port) < 0)
+ 			DPRINTF(E_FATAL, L_GENERAL, "Failed to connect to MiniSSDPd. EXITING");
+ 	}
+ 	/* open socket for HTTP connections. */
+-	shttpl = OpenAndConfHTTPSocket(runtime_vars.port);
+-	if (shttpl < 0)
++	shttpl4 = OpenAndConfHTTPSocketV4(runtime_vars.port);
++	if (shttpl4 < 0)
++		DPRINTF(E_FATAL, L_GENERAL, "Failed to open socket for HTTP. EXITING\n");
++		
++	shttpl6 = OpenAndConfHTTPSocketV6(runtime_vars.port);
++	if (shttpl4 < 0)
+ 		DPRINTF(E_FATAL, L_GENERAL, "Failed to open socket for HTTP. EXITING\n");
+ 	DPRINTF(E_WARN, L_GENERAL, "HTTP listening on port %d\n", runtime_vars.port);
+ 
+ #ifdef TIVO_SUPPORT
+-	if (GETFLAG(TIVO_MASK))
++/*	if (GETFLAG(TIVO_MASK))
+ 	{
+ 		DPRINTF(E_WARN, L_GENERAL, "TiVo support is enabled.\n");
+-		/* Add TiVo-specific randomize function to sqlite */
++		// Add TiVo-specific randomize function to sqlite 
+ 		ret = sqlite3_create_function(db, "tivorandom", 1, SQLITE_UTF8, NULL, &TiVoRandomSeedFunc, NULL, NULL);
+ 		if (ret != SQLITE_OK)
+ 			DPRINTF(E_ERROR, L_TIVO, "ERROR: Failed to add sqlite randomize function for TiVo!\n");
+@@ -1102,7 +1161,7 @@
+ 		}
+ 		else
+ 		{
+-			/* open socket for sending Tivo notifications */
++			// open socket for sending Tivo notifications 
+ 			sbeacon = OpenAndConfTivoBeaconSocket();
+ 			if(sbeacon < 0)
+ 				DPRINTF(E_FATAL, L_GENERAL, "Failed to open sockets for sending Tivo beacon notify "
+@@ -1111,12 +1170,12 @@
+ 			tivo_bcast.sin_addr.s_addr = htonl(getBcastAddress());
+ 			tivo_bcast.sin_port = htons(2190);
+ 		}
+-	}
++	}*/
+ #endif
+-
++     
+ 	reload_ifaces(0);
+ 	lastnotifytime.tv_sec = time(NULL) + runtime_vars.notify_interval;
+-
++     
+ 	/* main loop */
+ 	while (!quitting)
+ 	{
+@@ -1135,8 +1194,11 @@
+ 			{
+ 				DPRINTF(E_DEBUG, L_SSDP, "Sending SSDP notifies\n");
+ 				for (i = 0; i < n_lan_addr; i++)
+-				{
+-					SendSSDPNotifies(lan_addr[i].snotify, lan_addr[i].str,
++				{   
++				    SendSSDPNotifiesV4(lan_addr[i].snotify4, lan_addr[i].str4,
++						runtime_vars.port, runtime_vars.notify_interval);
++					if(lan_addr[i].snotify6>0)
++					SendSSDPNotifiesV6(lan_addr[i].snotify6, lan_addr[i].str6,
+ 						runtime_vars.port, runtime_vars.notify_interval);
+ 				}
+ 				memcpy(&lastnotifytime, &timeofday, sizeof(struct timeval));
+@@ -1157,6 +1219,7 @@
+ 					timeout.tv_usec = lastnotifytime.tv_usec - timeofday.tv_usec;
+ 			}
+ #ifdef TIVO_SUPPORT
++/*
+ 			if (sbeacon >= 0)
+ 			{
+ 				if (timeofday.tv_sec >= (lastbeacontime.tv_sec + beacon_interval))
+@@ -1168,54 +1231,72 @@
+ 						timeout.tv_sec = beacon_interval;
+ 						timeout.tv_usec = 0;
+ 					}
+-					/* Beacons should be sent every 5 seconds or so for the first minute,
+-					 * then every minute or so thereafter. */
++					// Beacons should be sent every 5 seconds or so for the first minute,
++					// then every minute or so thereafter. 
+ 					if (beacon_interval == 5 && (timeofday.tv_sec - startup_time) > 60)
+ 						beacon_interval = 60;
+ 				}
+ 				else if (timeout.tv_sec > (lastbeacontime.tv_sec + beacon_interval + 1 - timeofday.tv_sec))
+ 					timeout.tv_sec = lastbeacontime.tv_sec + beacon_interval - timeofday.tv_sec;
+ 			}
++*/
+ #endif
+ 		}
+-
++         
+ 		if (GETFLAG(SCANNING_MASK))
+ 		{
++		     
+ 			if (!scanner_pid || kill(scanner_pid, 0) != 0)
+ 			{
++			     
+ 				CLEARFLAG(SCANNING_MASK);
+ 				if (_get_dbtime() != lastdbtime)
+ 					updateID++;
+ 			}
+ 		}
+-
++         
+ 		/* select open sockets (SSDP, HTTP listen, and all HTTP soap sockets) */
+ 		FD_ZERO(&readset);
+-
+-		if (sssdp >= 0) 
+-		{
+-			FD_SET(sssdp, &readset);
+-			max_fd = MAX(max_fd, sssdp);
+-		}
+-		
+-		if (shttpl >= 0) 
+-		{
+-			FD_SET(shttpl, &readset);
+-			max_fd = MAX(max_fd, shttpl);
++         
++		if (sssdp4 >= 0) 
++		{   
++		     
++			FD_SET(sssdp4, &readset);
++			max_fd = MAX(max_fd, sssdp4);
++		}
++		if (sssdp6 >= 0) 
++		{   
++		     
++			FD_SET(sssdp6, &readset);
++			max_fd = MAX(max_fd, sssdp6);
++		}
++		if (shttpl4 >= 0) 
++		{
++		     
++			FD_SET(shttpl4, &readset);
++			max_fd = MAX(max_fd, shttpl4);
++		}
++		if (shttpl6 >= 0) 
++		{
++		     
++			FD_SET(shttpl6, &readset);
++			max_fd = MAX(max_fd, shttpl6);
+ 		}
+ #ifdef TIVO_SUPPORT
++/*
+ 		if (sbeacon >= 0) 
+ 		{
+ 			FD_SET(sbeacon, &readset);
+ 			max_fd = MAX(max_fd, sbeacon);
+ 		}
++*/
+ #endif
+ 		if (smonitor >= 0) 
+ 		{
+ 			FD_SET(smonitor, &readset);
+ 			max_fd = MAX(max_fd, smonitor);
+ 		}
+-
++         
+ 		i = 0;	/* active HTTP connections count */
+ 		for (e = upnphttphead.lh_first; e != NULL; e = e->entries.le_next)
+ 		{
+@@ -1228,8 +1309,9 @@
+ 		}
+ 		FD_ZERO(&writeset);
+ 		upnpevents_selectfds(&readset, &writeset, &max_fd);
+-
++         
+ 		ret = select(max_fd+1, &readset, &writeset, 0, &timeout);
++		 
+ 		if (ret < 0)
+ 		{
+ 			if(quitting) goto shutdown;
+@@ -1237,45 +1319,67 @@
+ 			DPRINTF(E_ERROR, L_GENERAL, "select(all): %s\n", strerror(errno));
+ 			DPRINTF(E_FATAL, L_GENERAL, "Failed to select open sockets. EXITING\n");
+ 		}
++		 
+ 		upnpevents_processfds(&readset, &writeset);
+ 		/* process SSDP packets */
+-		if (sssdp >= 0 && FD_ISSET(sssdp, &readset))
++		if (sssdp4 >= 0 && FD_ISSET(sssdp4, &readset))
+ 		{
+ 			/*DPRINTF(E_DEBUG, L_GENERAL, "Received SSDP Packet\n");*/
+-			ProcessSSDPRequest(sssdp, (unsigned short)runtime_vars.port);
++			ProcessSSDPRequestV4(sssdp4, (unsigned short)runtime_vars.port);
++		}
++
++		if (sssdp6 >= 0 && FD_ISSET(sssdp6, &readset))
++		{
++			/*DPRINTF(E_DEBUG, L_GENERAL, "Received SSDP Packet\n");*/
++			ProcessSSDPRequestV6(sssdp6, (unsigned short)runtime_vars.port);
+ 		}
+ #ifdef TIVO_SUPPORT
++/*
+ 		if (sbeacon >= 0 && FD_ISSET(sbeacon, &readset))
+ 		{
+-			/*DPRINTF(E_DEBUG, L_GENERAL, "Received UDP Packet\n");*/
++			//DPRINTF(E_DEBUG, L_GENERAL, "Received UDP Packet\n");
+ 			ProcessTiVoBeacon(sbeacon);
+ 		}
++*/
+ #endif
++         
++
+ 		if (smonitor >= 0 && FD_ISSET(smonitor, &readset))
+ 		{
+ 			ProcessMonitorEvent(smonitor);
+ 		}
+ 		/* increment SystemUpdateID if the content database has changed,
+ 		 * and if there is an active HTTP connection, at most once every 2 seconds */
++		  
+ 		if (i && (timeofday.tv_sec >= (lastupdatetime + 2)))
+ 		{
++		     
+ 			if (GETFLAG(SCANNING_MASK))
+ 			{
++			     
+ 				time_t dbtime = _get_dbtime();
+ 				if (dbtime != lastdbtime)
+ 				{
++				     
+ 					lastdbtime = dbtime;
+ 					last_changecnt = -1;
++					 
+ 				}
+ 			}
++			 
+ 			if (sqlite3_total_changes(db) != last_changecnt)
+ 			{
++			     
+ 				updateID++;
++				 
+ 				last_changecnt = sqlite3_total_changes(db);
++				 
+ 				upnp_event_var_change_notify(EContentDirectory);
++				 
+ 				lastupdatetime = timeofday.tv_sec;
+ 			}
+ 		}
++		 
+ 		/* process active HTTP connections */
+ 		for (e = upnphttphead.lh_first; e != NULL; e = e->entries.le_next)
+ 		{
+@@ -1283,38 +1387,79 @@
+ 				Process_upnphttp(e);
+ 		}
+ 		/* process incoming HTTP connections */
+-		if (shttpl >= 0 && FD_ISSET(shttpl, &readset))
++		if (shttpl6 >= 0 && FD_ISSET(shttpl6, &readset))
+ 		{
+-			int shttp;
+-			socklen_t clientnamelen;
+-			struct sockaddr_in clientname;
+-			clientnamelen = sizeof(struct sockaddr_in);
+-			shttp = accept(shttpl, (struct sockaddr *)&clientname, &clientnamelen);
+-			if (shttp<0)
++			int shttp6;
++			char addr6[INET6_ADDRSTRLEN];
++			socklen_t clientnamelen6;
++			struct sockaddr_in6 clientname6;
++			clientnamelen6 = sizeof(struct sockaddr_in6);
++			shttp6 = accept(shttpl6, (struct sockaddr *)&clientname6, &clientnamelen6);
++			if (shttp6<0)
+ 			{
+ 				DPRINTF(E_ERROR, L_GENERAL, "accept(http): %s\n", strerror(errno));
+ 			}
+ 			else
+-			{
+-				struct upnphttp * tmp = 0;
++			{   
++				struct upnphttp * tmp6 = NULL;
++				inet_ntop(AF_INET6,&clientname6.sin6_addr,addr6,sizeof(addr6));
+ 				DPRINTF(E_DEBUG, L_GENERAL, "HTTP connection from %s:%d\n",
+-					inet_ntoa(clientname.sin_addr),
+-					ntohs(clientname.sin_port) );
++					addr6,
++					ntohs(clientname6.sin6_port) );
+ 				/*if (fcntl(shttp, F_SETFL, O_NONBLOCK) < 0) {
+ 					DPRINTF(E_ERROR, L_GENERAL, "fcntl F_SETFL, O_NONBLOCK\n");
+ 				}*/
+ 				/* Create a new upnphttp object and add it to
+ 				 * the active upnphttp object list */
+-				tmp = New_upnphttp(shttp);
+-				if (tmp)
++				tmp6 = New_upnphttp(shttp6);
++		
++				if (tmp6)
+ 				{
+-					tmp->clientaddr = clientname.sin_addr;
+-					LIST_INSERT_HEAD(&upnphttphead, tmp, entries);
++					//tmp->clientaddr = clientname.sin_addr;
++					tmp6->socket_type=6;
++					memcpy(&tmp6->clientaddr6,&clientname6.sin6_addr,sizeof(tmp6->clientaddr6));
++					LIST_INSERT_HEAD(&upnphttphead, tmp6, entries);
+ 				}
+ 				else
+ 				{
+ 					DPRINTF(E_ERROR, L_GENERAL, "New_upnphttp() failed\n");
+-					close(shttp);
++					close(shttp6);
++				}
++			}
++		}
++		if(shttpl4 >= 0 && FD_ISSET(shttpl4, &readset))
++		{
++			int shttp4;
++			socklen_t clientnamelen4;
++			struct sockaddr_in clientname4;
++			clientnamelen4 = sizeof(struct sockaddr_in);
++			shttp4 = accept(shttpl4, (struct sockaddr *)&clientname4, &clientnamelen4);
++			if (shttp4<0)
++			{
++				DPRINTF(E_ERROR, L_GENERAL, "accept(http): %s\n", strerror(errno));
++			}
++			else
++			{
++				struct upnphttp * tmp4 = NULL;
++				DPRINTF(E_DEBUG, L_GENERAL, "HTTP connection from %s:%d\n",
++					inet_ntoa(clientname4.sin_addr),
++					ntohs(clientname4.sin_port) );
++				/*if (fcntl(shttp, F_SETFL, O_NONBLOCK) < 0) {
++					DPRINTF(E_ERROR, L_GENERAL, "fcntl F_SETFL, O_NONBLOCK\n");
++				}*/
++				/* Create a new upnphttp object and add it to
++				 * the active upnphttp object list */
++				tmp4 = New_upnphttp(shttp4);
++				if (tmp4)
++				{   
++				    tmp4->socket_type=4;
++					tmp4->clientaddr4 = clientname4.sin_addr;
++					LIST_INSERT_HEAD(&upnphttphead, tmp4, entries);
++				}
++				else
++				{
++					DPRINTF(E_ERROR, L_GENERAL, "New_upnphttp() failed\n");
++					close(shttp4);
+ 				}
+ 			}
+ 		}
+@@ -1342,21 +1487,32 @@
+ 		LIST_REMOVE(e, entries);
+ 		Delete_upnphttp(e);
+ 	}
+-	if (sssdp >= 0)
+-		close(sssdp);
+-	if (shttpl >= 0)
+-		close(shttpl);
++	if (sssdp4 >= 0)
++		close(sssdp4);
++	if (sssdp6 >= 0)
++	    close(sssdp6);
++	if (shttpl4 >= 0)
++		close(shttpl4);
++	if (shttpl6 >= 0)
++		close(shttpl6);
++	
+ #ifdef TIVO_SUPPORT
++/*
+ 	if (sbeacon >= 0)
+ 		close(sbeacon);
++*/
+ #endif
+ 	if (smonitor >= 0)
+ 		close(smonitor);
+ 	
+ 	for (i = 0; i < n_lan_addr; i++)
+ 	{
+-		SendSSDPGoodbyes(lan_addr[i].snotify);
+-		close(lan_addr[i].snotify);
++		SendSSDPGoodbyesV4(lan_addr[i].snotify4);
++		close(lan_addr[i].snotify4);
++		if(lan_addr[i].snotify6>0){
++		    SendSSDPGoodbyesV6(lan_addr[i].snotify6);
++		    close(lan_addr[i].snotify6);
++		}
+ 	}
+ 
+ 	if (inotify_thread)
+@@ -1371,7 +1527,6 @@
+ 
+ 	sql_exec(db, "UPDATE SETTINGS set VALUE = '%u' where KEY = 'UPDATE_ID'", updateID);
+ 	sqlite3_close(db);
+-
+ 	upnpevents_removeSubscribers();
+ 
+ 	if (pidfilename && unlink(pidfilename) < 0)
+diff -Nur a/minidlnatypes.h b/minidlnatypes.h
+--- a/minidlnatypes.h	2017-10-09 14:43:31.548669259 +0800
++++ b/minidlnatypes.h	2017-10-09 17:40:00.298439106 +0800
+@@ -38,10 +38,16 @@
+ /* structure for storing lan addresses
+  * with ascii representation and mask */
+ struct lan_addr_s {
+-	char str[16];	/* example: 192.168.0.1 */
+-	struct in_addr addr;	/* ip */
+-	struct in_addr mask;	/* netmask */
+-	int snotify;	/* notify socket */
++	char str4[16];
++	char str6[INET6_ADDRSTRLEN];	/* example: 192.168.0.1 */
++	char g_str[INET6_ADDRSTRLEN];   /*global str ip*/
++	struct in6_addr addr6;	/* ip */
++	struct in6_addr g_addr; /*global addr ipv6*/
++	struct in6_addr mask6;	/* netmask */
++	struct in_addr addr4;   /* ip */
++	struct in_addr mask4;   /* netmask */
++	int snotify4;	/* notify socket */
++	int snotify6;   /* notify socket */
+ 	unsigned int ifindex;	/* interface index */
+ };
+ 
+diff -Nur a/minissdp.c b/minissdp.c
+--- a/minissdp.c	2017-10-09 14:43:31.548669259 +0800
++++ b/minissdp.c	2017-10-09 17:40:00.298439106 +0800
+@@ -41,7 +41,8 @@
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+ #include <errno.h>
+-
++#include <net/if.h>
++#include <linux/in6.h>
+ #include "minidlnapath.h"
+ #include "upnphttp.h"
+ #include "upnpglobalvars.h"
+@@ -55,9 +56,10 @@
+ /* SSDP ip/port */
+ #define SSDP_PORT (1900)
+ #define SSDP_MCAST_ADDR ("239.255.255.250")
++#define SSDP_IPV6_LINKLOCAL "FF02::C"
+ 
+ static int
+-AddMulticastMembership(int s, struct lan_addr_s *iface)
++AddMulticastMembershipV4(int s, struct lan_addr_s *iface)
+ {
+ 	int ret;
+ #ifdef HAVE_STRUCT_IP_MREQN
+@@ -71,7 +73,7 @@
+ 	/* setting up imr structure */
+ 	memset(&imr, '\0', sizeof(imr));
+ 	imr.imr_multiaddr.s_addr = inet_addr(SSDP_MCAST_ADDR);
+-	imr.imr_interface.s_addr = iface->addr.s_addr;
++	imr.imr_interface.s_addr = iface->addr4.s_addr;
+ #endif
+ 	/* Setting the socket options will guarantee, tha we will only receive
+ 	 * multicast traffic on a specific Interface.
+@@ -88,10 +90,37 @@
+ 	return 0;
+ }
+ 
++static int
++AddMulticastMembershipV6(int s, struct lan_addr_s *iface)
++{
++	int ret;
++
++    struct ipv6_mreq imr; /* Ip multicast membership */
++    /* setting up imr structure */
++    memset(&imr, '\0', sizeof(imr));
++    inet_pton(AF_INET6,SSDP_IPV6_LINKLOCAL,&imr.ipv6mr_multiaddr);
++    //imr.ipv6mr_ifindex=iface->ifindex;
++    //memcpy(&imr.ipv6mr_interface,iface->addr6.s6_addr,16);
++    imr.ipv6mr_interface = iface->ifindex;
++	/* Setting the socket options will guarantee, tha we will only receive
++	 * multicast traffic on a specific Interface.
++	 * In addition the kernel is instructed to send an igmp message (choose
++	 * mcast group) on the specific interface/subnet. */
++	ret = setsockopt(s, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (void *)&imr, sizeof(imr));
++	if (ret < 0 && errno != EADDRINUSE)
++	{
++		DPRINTF(E_ERROR, L_SSDP, "setsockopt(udp, IP_ADD_MEMBERSHIP): %s\n",
++			strerror(errno));
++		return -1;
++	}
++
++	return 0;
++}
++
+ /* Open and configure the socket listening for 
+  * SSDP udp packets sent on 239.255.255.250 port 1900 */
+ int
+-OpenAndConfSSDPReceiveSocket(void)
++OpenAndConfSSDPReceiveSocketV4(void)
+ {
+ 	int s;
+ 	int i = 1;
+@@ -136,10 +165,74 @@
+ 	return s;
+ }
+ 
++/* Open and configure the socket listening for 
++ * SSDP udp packets sent on FF02::C port 1900*/
++int
++OpenAndConfSSDPReceiveSocketV6(void)
++{
++	int s;
++	int i = 1;
++	struct sockaddr_in6 sockname;
++	struct ipv6_mreq ssdpMcastAddr;
++	s = socket(PF_INET6, SOCK_DGRAM, 0);
++	if (s < 0)
++	{
++		DPRINTF(E_ERROR, L_SSDP, "socket(udp): %s\n", strerror(errno));
++		return -1;
++	}	
++
++	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i)) < 0)
++		DPRINTF(E_WARN, L_SSDP, "setsockopt(udp, SO_REUSEADDR): %s\n", strerror(errno));
++#ifdef __linux__
++	if (setsockopt(s, IPPROTO_IPV6, IPV6_RECVPKTINFO, &i, sizeof(i)) < 0)
++		DPRINTF(E_WARN, L_SSDP, "setsockopt(udp, IPV6_PKTINFO): %s\n", strerror(errno));
++#endif
++    if (setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&i, sizeof(i)) < 0)
++		DPRINTF(E_WARN, L_SSDP, "setsockopt(udp, IPV6_V6ONLY): %s\n", strerror(errno));
++	
++	memset(&sockname, 0, sizeof(struct sockaddr_in6));
++	sockname.sin6_family = (sa_family_t)AF_INET6;
++	sockname.sin6_port = htons(SSDP_PORT);
++	sockname.sin6_scope_id = if_nametoindex(runtime_vars.ifaces[0]);
++#ifdef __linux__
++	/* NOTE: Binding a socket to a UDP multicast address means, that we just want
++	 * to receive datagramms send to this multicast address.
++	 * To specify the local nics we want to use we have to use setsockopt,
++	 * see AddMulticastMembership(...). */
++	//sockname.sin_addr.s_addr = inet_addr(SSDP_MCAST_ADDR);
++	inet_pton(AF_INET6,SSDP_IPV6_LINKLOCAL,&sockname.sin6_addr);
++#else
++	/* NOTE: Binding to SSDP_MCAST_ADDR on Darwin & *BSD causes NOTIFY replies are
++	 * sent from SSDP_MCAST_ADDR what forces some clients to ignore subsequent
++	 * unsolicited NOTIFY packets from the real interface address. */
++	//sockname.sin_addr.s_addr = htonl(INADDR_ANY);
++	sockname.sin6_addr=in6addr_any;
++#endif
++
++	if (bind(s, (struct sockaddr *)&sockname, sizeof(struct sockaddr_in6)) < 0)
++	{
++		DPRINTF(E_ERROR, L_SSDP, "bind(udp): %s\n", strerror(errno));
++		close(s);
++		return -1;
++	}
++
++    memset((void *)&ssdpMcastAddr, 0, sizeof(ssdpMcastAddr));
++    ssdpMcastAddr.ipv6mr_interface = if_nametoindex(runtime_vars.ifaces[0]);
++    inet_pton(AF_INET6, SSDP_IPV6_LINKLOCAL,&ssdpMcastAddr.ipv6mr_multiaddr);
++
++    if(setsockopt(s, IPPROTO_IPV6, IPV6_JOIN_GROUP,(char *)&ssdpMcastAddr, sizeof(ssdpMcastAddr))<0)
++        DPRINTF(E_WARN, L_SSDP, "setsockopt(udp, IPV6_JOIN_GROUP): %s\n", strerror(errno));
++
++    if(setsockopt(s, SOL_SOCKET, SO_BROADCAST, (char *)&i, sizeof(i)) < 0)
++        DPRINTF(E_WARN, L_SSDP, "setsockopt(udp, SO_BROADCAST): %s\n", strerror(errno));
++        
++	return s;
++}
++
+ /* open the UDP socket used to send SSDP notifications to
+  * the multicast group reserved for them */
+ int
+-OpenAndConfSSDPNotifySocket(struct lan_addr_s *iface)
++OpenAndConfSSDPNotifySocketV4(struct lan_addr_s *iface)
+ {
+ 	int s;
+ 	unsigned char loopchar = 0;
+@@ -154,7 +247,7 @@
+ 		return -1;
+ 	}
+ 
+-	mc_if.s_addr = iface->addr.s_addr;
++	mc_if.s_addr = iface->addr4.s_addr;
+ 
+ 	if (setsockopt(s, IPPROTO_IP, IP_MULTICAST_LOOP, (char *)&loopchar, sizeof(loopchar)) < 0)
+ 	{
+@@ -174,7 +267,7 @@
+ 
+ 	memset(&sockname, 0, sizeof(struct sockaddr_in));
+ 	sockname.sin_family = AF_INET;
+-	sockname.sin_addr.s_addr = iface->addr.s_addr;
++	sockname.sin_addr.s_addr = iface->addr4.s_addr;
+ 
+ 	if (bind(s, (struct sockaddr *)&sockname, sizeof(struct sockaddr_in)) < 0)
+ 	{
+@@ -183,10 +276,64 @@
+ 		return -1;
+ 	}
+ 
+-	if (AddMulticastMembership(sssdp, iface) < 0)
++	if (AddMulticastMembershipV4(sssdp4, iface) < 0)
++	{
++		DPRINTF(E_WARN, L_SSDP, "Failed to add multicast membership for address %s\n", 
++			iface->str4);
++	}
++
++	return s;
++}
++
++/* open the UDP socket used to send SSDP notifications to
++ * the multicast group reserved for them */
++int
++OpenAndConfSSDPNotifySocketV6(struct lan_addr_s *iface)
++{
++	int s;
++	unsigned int loopchar = 0;
++	uint8_t ttl = 4;
++	//struct in6_addr mc_if;
++	struct sockaddr_in6 sockname;
++	
++	s = socket(PF_INET6, SOCK_DGRAM, 0);
++	if (s < 0)
++	{
++		DPRINTF(E_ERROR, L_SSDP, "socket(udp_notify): %s\n", strerror(errno));
++		return -1;
++	}
++	
++    //memcpy(mc_if.s6_addr,iface->addr.s6_addr,16);
++	if (setsockopt(s, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, (unsigned int *)&loopchar, sizeof(loopchar)) < 0)
++	{
++		DPRINTF(E_ERROR, L_SSDP, "setsockopt(udp_notify, IP_MULTICAST_LOOP): %s\n", strerror(errno));
++		close(s);
++		return -1;
++	}
++    /*
++	if (setsockopt(s, IPPROTO_IPV6, IPV6_MULTICAST_IF, (char *)&mc_if, sizeof(mc_if)) < 0)
++	{
++		DPRINTF(E_ERROR, L_SSDP, "setsockopt(udp_notify, IP_MULTICAST_IF): %s\n", strerror(errno));
++		close(s);
++		return -1;
++	}*/
++
++	setsockopt(s, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,&ttl, sizeof(ttl));
++
++	memset(&sockname, 0, sizeof(struct sockaddr_in6));
++	sockname.sin6_family = AF_INET6;
++    memcpy(&sockname.sin6_addr,&iface->g_addr,sizeof(iface->g_addr));
++	if (bind(s, (struct sockaddr *)&sockname, sizeof(struct sockaddr_in6)) < 0)
++	{
++		DPRINTF(E_ERROR, L_SSDP, "bind(udp_notify): %s\n", strerror(errno));
++		close(s);
++		return -1;
++	}
++
++	if (AddMulticastMembershipV6(sssdp6, iface) < 0)
+ 	{
+ 		DPRINTF(E_WARN, L_SSDP, "Failed to add multicast membership for address %s\n", 
+-			iface->str);
++			iface->str6);
+ 	}
+ 
+ 	return s;
+@@ -216,7 +363,7 @@
+ /* not really an SSDP "announce" as it is the response
+  * to a SSDP "M-SEARCH" */
+ static void
+-SendSSDPResponse(int s, struct sockaddr_in sockname, int st_no,
++SendSSDPResponseV4(int s, struct sockaddr_in sockname, int st_no,
+ 		 const char *host, unsigned short port, socklen_t len_r)
+ {
+ 	int l, n;
+@@ -260,8 +407,56 @@
+ 		DPRINTF(E_ERROR, L_SSDP, "sendto(udp): %s\n", strerror(errno));
+ }
+ 
++/* not really an SSDP "announce" as it is the response
++ * to a SSDP "M-SEARCH" */
++static void
++SendSSDPResponseV6(int s, struct sockaddr_in6 sockname, int st_no,
++		 const char *host, unsigned short port, socklen_t len_r)
++{
++	int l, n;
++	char buf[512];
++	char tmstr[30];
++	time_t tm = time(NULL);
++    char addr6[INET6_ADDRSTRLEN]={0};
++	/*
++	 * follow guideline from document "UPnP Device Architecture 1.0"
++	 * uppercase is recommended.
++	 * DATE: is recommended
++	 * SERVER: OS/ver UPnP/1.0 minidlna/1.0
++	 * - check what to put in the 'Cache-Control' header 
++	 * */
++	inet_ntop(AF_INET6,&sockname.sin6_addr,addr6,INET6_ADDRSTRLEN);
++	strftime(tmstr, sizeof(tmstr), "%a, %d %b %Y %H:%M:%S GMT", gmtime(&tm));
++	l = snprintf(buf, sizeof(buf), "HTTP/1.1 200 OK\r\n"
++		"CACHE-CONTROL: max-age=%u\r\n"
++		"DATE: %s\r\n"
++		"ST: %s%s\r\n"
++		"USN: %s%s%s%s\r\n"
++		"EXT:\r\n"
++		"SERVER: " MINIDLNA_SERVER_STRING "\r\n"
++		"LOCATION: http://[%s]:%u" ROOTDESC_PATH "\r\n"
++		"Content-Length: 0\r\n"
++		"\r\n",
++		(runtime_vars.notify_interval<<1)+10,
++		tmstr,
++		known_service_types[st_no],
++		(st_no > 1 ? "1" : ""),
++		uuidvalue,
++		(st_no > 0 ? "::" : ""),
++		(st_no > 0 ? known_service_types[st_no] : ""),
++		(st_no > 1 ? "1" : ""),
++		host, (unsigned int)port);
++	DPRINTF(E_DEBUG, L_SSDP, "%s Sending M-SEARCH response to %s:%d ST: %s\n",host,
++		addr6, ntohs(sockname.sin6_port),
++		known_service_types[st_no]);
++	n = sendto(s, buf, l, 0,
++	           (struct sockaddr *)&sockname, len_r);
++	if (n < 0)
++		DPRINTF(E_ERROR, L_SSDP, "sendto(udp): %s\n", strerror(errno));
++}
++
+ void
+-SendSSDPNotifies(int s, const char *host, unsigned short port,
++SendSSDPNotifiesV4(int s, const char *host, unsigned short port,
+                  unsigned int interval)
+ {
+ 	struct sockaddr_in sockname;
+@@ -316,8 +511,65 @@
+ 	}
+ }
+ 
++void
++SendSSDPNotifiesV6(int s, const char *host, unsigned short port,
++                 unsigned int interval)
++{
++	struct sockaddr_in6 sockname;
++	int l, n, dup, i=0;
++	unsigned int lifetime;
++	char bufr[512];
++
++	memset(&sockname, 0, sizeof(struct sockaddr_in6));
++	sockname.sin6_family = AF_INET6;
++	sockname.sin6_port = htons(SSDP_PORT);
++	inet_pton(AF_INET6, SSDP_IPV6_LINKLOCAL,&sockname.sin6_addr);
++	//sockname.sin_addr.s_addr = inet_addr(SSDP_MCAST_ADDR);
++	lifetime = (interval << 1) + 10;
++
++	for (dup = 0; dup < 2; dup++)
++	{
++		if (dup)
++			_usleep(200000);
++		i = 0;
++		while (known_service_types[i])
++		{
++			l = snprintf(bufr, sizeof(bufr), 
++					"NOTIFY * HTTP/1.1\r\n"
++					"HOST:[%s]:%d\r\n"
++					"CACHE-CONTROL:max-age=%u\r\n"
++					"LOCATION:http://[%s]:%d" ROOTDESC_PATH"\r\n"
++					"SERVER: " MINIDLNA_SERVER_STRING "\r\n"
++					"NT:%s%s\r\n"
++					"USN:%s%s%s%s\r\n"
++					"NTS:ssdp:alive\r\n"
++					"\r\n",
++					SSDP_IPV6_LINKLOCAL, SSDP_PORT,
++					lifetime,
++					host, port,
++					known_service_types[i],
++					(i > 1 ? "1" : ""),
++					uuidvalue,
++					(i > 0 ? "::" : ""),
++					(i > 0 ? known_service_types[i] : ""),
++					(i > 1 ? "1" : ""));
++			if (l >= sizeof(bufr))
++			{
++				DPRINTF(E_WARN, L_SSDP, "SendSSDPNotifies(): truncated output\n");
++				l = sizeof(bufr);
++			}
++			DPRINTF(E_MAXDEBUG, L_SSDP, "Sending ssdp:alive [%d]\n", s);
++			n = sendto(s, bufr, l, 0,
++				(struct sockaddr *)&sockname, sizeof(struct sockaddr_in6));
++			if (n < 0)
++				DPRINTF(E_ERROR, L_SSDP, "sendto(udp_notify=%d, %s): %s\n", s, host, strerror(errno));
++			i++;
++		}
++	}
++}
++
+ static void
+-ParseUPnPClient(char *location)
++ParseUPnPClientV4(char *location)
+ {
+ 	char buf[8192];
+ 	struct sockaddr_in dest;
+@@ -466,10 +718,10 @@
+ 	if (!type)
+ 		return;
+ 	/* Add this client to the cache if it's not there already. */
+-	client = SearchClientCache(dest.sin_addr, 1);
++	client = SearchClientCacheV4(dest.sin_addr, 1);
+ 	if (!client)
+ 	{
+-		AddClientCache(dest.sin_addr, type);
++		AddClientCacheV4(dest.sin_addr, type);
+ 	}
+ 	else
+ 	{
+@@ -478,62 +730,224 @@
+ 	}
+ }
+ 
+-/* ProcessSSDPRequest()
+- * process SSDP M-SEARCH requests and responds to them */
+-void
+-ProcessSSDPRequest(int s, unsigned short port)
++static void
++ParseUPnPClientV6(char *location)
+ {
+-	int n;
+-	char bufr[1500];
+-	struct sockaddr_in sendername;
+-	int i;
+-	char *st = NULL, *mx = NULL, *man = NULL, *mx_end = NULL;
+-	int man_len = 0;
+-	socklen_t len_r = sizeof(struct sockaddr_in);
+-#ifdef __linux__
+-	char cmbuf[CMSG_SPACE(sizeof(struct in_pktinfo))];
+-	struct iovec iovec = {
+-		.iov_base = bufr,
+-		.iov_len = sizeof(bufr)-1
+-	};
+-	struct msghdr mh = {
+-		.msg_name = &sendername,
+-		.msg_namelen = sizeof(struct sockaddr_in),
+-		.msg_iov = &iovec,
+-		.msg_iovlen = 1,
+-		.msg_control = cmbuf,
+-		.msg_controllen = sizeof(cmbuf)
+-	};
+-
+-	n = recvmsg(s, &mh, 0);
+-#else
++	char buf[8192];
++	struct sockaddr_in6 dest;
++	int s, n, do_headers = 0, nread = 0;
++	struct timeval tv;
++	char *addr, *path, *port_str;
++	long port = 80;
++	char *off = NULL, *p;
++	int content_len = sizeof(buf);
++	struct NameValueParserData xml;
++	struct client_cache_s *client;
++	int type = 0;
++	char *model, *serial, *name;
+ 
+-	n = recvfrom(s, bufr, sizeof(bufr)-1, 0,
+-	             (struct sockaddr *)&sendername, &len_r);
+-	len_r = MIN(len_r, sizeof(struct sockaddr_in));
+-#endif
+-	if (n < 0)
+-	{
+-		DPRINTF(E_ERROR, L_SSDP, "recvfrom(udp): %s\n", strerror(errno));
++	if (strncmp(location, "http://", 7) != 0)
++		return;
++	path = location + 7;
++	port_str = strsep(&path, "/");
++	if (!path)
+ 		return;
++	addr = strsep(&port_str, ":");
++	if (port_str)
++	{
++		port = strtol(port_str, NULL, 10);
++		if (!port)
++			port = 80;
+ 	}
+-	bufr[n] = '\0';
+-	n -= 2;
++    DPRINTF(E_DEBUG, L_SSDP, "addr:%s\tport:%s\n",addr,port_str);
++	memset(&dest, '\0', sizeof(dest));
++	if (inet_pton(AF_INET6,addr, &dest.sin6_addr)!=1)
++		return;
++	/* Check if the client is already in cache */
++	dest.sin6_family = AF_INET6;
++	dest.sin6_port = htons(port);
+ 
+-	if (memcmp(bufr, "NOTIFY", 6) == 0)
+-	{
+-		char *loc = NULL, *srv = NULL, *nts = NULL, *nt = NULL;
+-		int loc_len = 0;
+-		//DEBUG DPRINTF(E_DEBUG, L_SSDP, "Received SSDP notify:\n%.*s", n, bufr);
+-		for (i = 0; i < n; i++)
+-		{
+-			if( bufr[i] == '*' )
+-				break;
+-		}
+-		if (strcasestrc(bufr+i, "HTTP/1.1", '\r') == NULL)
+-			return;
+-		while (i < n)
+-		{
++	s = socket(PF_INET6, SOCK_STREAM, 0);
++	if (s < 0)
++		return;
++
++	tv.tv_sec = 0;
++	tv.tv_usec = 500000;
++	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
++	setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
++
++	if (connect(s, (struct sockaddr*)&dest, sizeof(struct sockaddr_in6)) < 0)
++		goto close;
++
++	n = snprintf(buf, sizeof(buf), "GET /%s HTTP/1.0\r\n"
++	                               "HOST: [%s]:%ld\r\n\r\n",
++	                               path, addr, port);
++	if (write(s, buf, n) < 1)
++		goto close;
++
++	while ((n = read(s, buf+nread, sizeof(buf)-nread-1)) > 0)
++	{
++		nread += n;
++		buf[nread] = '\0';
++		n = nread - 4;
++		p = buf;
++
++		while (!off && (n-- > 0))
++		{
++			if (p[0] == '\r' && p[1] == '\n' && p[2] == '\r' && p[3] == '\n')
++			{
++				off = p + 4;
++				do_headers = 1;
++			}
++			p++;
++		}
++		if (!off)
++			continue;
++
++		if (do_headers)
++		{
++			p = buf;
++			if (strncmp(p, "HTTP/", 5) != 0)
++				goto close;
++			while (*p != ' ' && *p != '\t')
++				p++;
++			/* If we don't get a 200 status, ignore it */
++			if (strtol(p, NULL, 10) != 200)
++				goto close;
++			p = strcasestr(p, "Content-Length:");
++			if (p)
++				content_len = strtol(p+15, NULL, 10);
++			do_headers = 0;
++		}
++		if ((buf + nread - off) >= content_len)
++			break;
++	}
++close:
++	close(s);
++	if (!off)
++		return;
++	nread -= off - buf;
++	ParseNameValue(off, nread, &xml, 0);
++	model = GetValueFromNameValueList(&xml, "modelName");
++	serial = GetValueFromNameValueList(&xml, "serialNumber");
++	name = GetValueFromNameValueList(&xml, "friendlyName");
++	if (model)
++	{
++		int i;
++		DPRINTF(E_DEBUG, L_SSDP, "Model: %s\n", model);
++		for (i = 0; client_types[i].name; i++)
++		{
++			if (client_types[i].match_type != EModelName)
++				continue;
++			if (strstr(model, client_types[i].match) != NULL)
++			{
++				type = i;
++				break;
++			}
++		}
++
++		/* Special Samsung handling.  It's very hard to tell Series A from B */
++		if (type > 0 && client_types[type].type == ESamsungSeriesB)
++		{
++			if (serial)
++			{
++				DPRINTF(E_DEBUG, L_SSDP, "Serial: %s\n", serial);
++				/* The Series B I saw was 20081224DMR.  Series A should be older than that. */
++				if (atoi(serial) < 20081201)
++					type = 0;
++			}
++			else
++			{
++				type = 0;
++			}
++		}
++
++		if (type == 0 && name != NULL)
++		{
++			for (i = 0; client_types[i].name; i++)
++			{
++				if (client_types[i].match_type != EFriendlyNameSSDP)
++					continue;
++				if (strcmp(name, client_types[i].match) == 0)
++				{
++					type = i;
++					break;
++				}
++			}
++		}
++	}
++	ClearNameValueList(&xml);
++	if (!type)
++		return;
++	/* Add this client to the cache if it's not there already. */
++	client = SearchClientCacheV6(dest.sin6_addr, 0);
++	if (!client)
++	{
++		AddClientCacheV6(dest.sin6_addr, type);
++	}
++	else
++	{
++		client->type = &client_types[type];
++		client->age = time(NULL);
++	}
++}
++
++/* ProcessSSDPRequest()
++ * process SSDP M-SEARCH requests and responds to them */
++void
++ProcessSSDPRequestV4(int s, unsigned short port)
++{
++	int n;
++	char bufr[1500];
++	struct sockaddr_in sendername;
++	int i;
++	char *st = NULL, *mx = NULL, *man = NULL, *mx_end = NULL;
++	int man_len = 0;
++	socklen_t len_r = sizeof(struct sockaddr_in);
++#ifdef __linux__
++	char cmbuf[CMSG_SPACE(sizeof(struct in_pktinfo))];
++	struct iovec iovec = {
++		.iov_base = bufr,
++		.iov_len = sizeof(bufr)-1
++	};
++	struct msghdr mh = {
++		.msg_name = &sendername,
++		.msg_namelen = sizeof(struct sockaddr_in),
++		.msg_iov = &iovec,
++		.msg_iovlen = 1,
++		.msg_control = cmbuf,
++		.msg_controllen = sizeof(cmbuf)
++	};
++
++	n = recvmsg(s, &mh, 0);
++#else
++
++	n = recvfrom(s, bufr, sizeof(bufr)-1, 0,
++	             (struct sockaddr *)&sendername, &len_r);
++	len_r = MIN(len_r, sizeof(struct sockaddr_in));
++#endif
++	if (n < 0)
++	{
++		DPRINTF(E_ERROR, L_SSDP, "recvfrom(udp): %s\n", strerror(errno));
++		return;
++	}
++	bufr[n] = '\0';
++	n -= 2;
++
++	if (memcmp(bufr, "NOTIFY", 6) == 0)
++	{
++		char *loc = NULL, *srv = NULL, *nts = NULL, *nt = NULL;
++		int loc_len = 0;
++		//DEBUG DPRINTF(E_DEBUG, L_SSDP, "Received SSDP notify:\n%.*s", n, bufr);
++		for (i = 0; i < n; i++)
++		{
++			if( bufr[i] == '*' )
++				break;
++		}
++		if (strcasestrc(bufr+i, "HTTP/1.1", '\r') == NULL)
++			return;
++		while (i < n)
++		{
+ 			while ((i < n) && (bufr[i] != '\r' || bufr[i+1] != '\n'))
+ 				i++;
+ 			i += 2;
+@@ -573,7 +987,7 @@
+ 		    (strstrc(srv, "DigiOn DiXiM", '\r') != NULL)) /* Marantz Receiver */
+ 		{
+ 			/* Check if the client is already in cache */
+-			struct client_cache_s *client = SearchClientCache(sendername.sin_addr, 1);
++			struct client_cache_s *client = SearchClientCacheV4(sendername.sin_addr, 1);
+ 			if (client)
+ 			{
+ 				if (client->type->type < EStandardDLNA150 &&
+@@ -583,13 +997,13 @@
+ 					return;
+ 				}
+ 			}
+-			ParseUPnPClient(loc);
++			ParseUPnPClientV4(loc);
+ 		}
+ 	}
+ 	else if (memcmp(bufr, "M-SEARCH", 8) == 0)
+ 	{
+ 		int st_len = 0, mx_len = 0, mx_val = 0;
+-		//DPRINTF(E_DEBUG, L_SSDP, "Received SSDP request:\n%.*s\n", n, bufr);
++		DPRINTF(E_DEBUG, L_SSDP, "Received SSDP request:\n%.*s\n", n, bufr);
+ 		for (i = 0; i < n; i++)
+ 		{
+ 			if (bufr[i] == '*')
+@@ -675,8 +1089,8 @@
+ 			/* find in which sub network the client is */
+ 			for (i = 0; i < n_lan_addr; i++)
+ 			{
+-				if((sendername.sin_addr.s_addr & lan_addr[i].mask.s_addr) ==
+-				   (lan_addr[i].addr.s_addr & lan_addr[i].mask.s_addr))
++				if((sendername.sin_addr.s_addr & lan_addr[i].mask4.s_addr) ==
++				   (lan_addr[i].addr4.s_addr & lan_addr[i].mask4.s_addr))
+ 				{
+ 					iface = i;
+ 					break;
+@@ -688,7 +1102,7 @@
+ 					inet_ntoa(sendername.sin_addr));
+ 				return;
+ 			}
+-			host = lan_addr[iface].str;
++			host = lan_addr[iface].str4;
+ #endif
+ 			DPRINTF(E_DEBUG, L_SSDP, "SSDP M-SEARCH from %s:%d ST: %.*s, MX: %.*s, MAN: %.*s\n",
+ 				inet_ntoa(sendername.sin_addr),
+@@ -723,7 +1137,7 @@
+ 						break;
+ 				}
+ 				_usleep(random()>>20);
+-				SendSSDPResponse(s, sendername, i,
++				SendSSDPResponseV4(s, sendername, i,
+ 						 host, port, len_r);
+ 				return;
+ 			}
+@@ -734,7 +1148,7 @@
+ 				for (i=0; known_service_types[i]; i++)
+ 				{
+ 					l = strlen(known_service_types[i]);
+-					SendSSDPResponse(s, sendername, i,
++					SendSSDPResponseV4(s, sendername, i,
+ 							 host, port, len_r);
+ 				}
+ 			}
+@@ -756,10 +1170,292 @@
+ 	}
+ }
+ 
++/* ProcessSSDPRequest()
++ * process SSDP M-SEARCH requests and responds to them */
++void
++ProcessSSDPRequestV6(int s, unsigned short port)
++{
++	int n;
++	char bufr[1500];
++	struct sockaddr_in6 sendername;
++	int i;
++	char *st = NULL, *mx = NULL, *man = NULL, *mx_end = NULL;
++	int man_len = 0;
++	socklen_t len_r = sizeof(struct sockaddr_in6);
++#ifdef __linux__
++	char cmbuf[CMSG_SPACE(sizeof(struct in6_pktinfo))];
++	struct iovec iovec = {
++		.iov_base = bufr,
++		.iov_len = sizeof(bufr)-1
++	};
++	struct msghdr mh = {
++		.msg_name = &sendername,
++		.msg_namelen = sizeof(struct sockaddr_in6),
++		.msg_iov = &iovec,
++		.msg_iovlen = 1,
++		.msg_control = cmbuf,
++		.msg_controllen = sizeof(cmbuf)
++	};
++
++	n = recvmsg(s, &mh, 0);
++#else
++
++	n = recvfrom(s, bufr, sizeof(bufr)-1, 0,
++	             (struct sockaddr *)&sendername, &len_r);
++	len_r = MIN(len_r, sizeof(struct sockaddr_in6));
++#endif
++	if (n < 0)
++	{
++		DPRINTF(E_ERROR, L_SSDP, "recvfrom(udp): %s\n", strerror(errno));
++		return;
++	}
++	bufr[n] = '\0';
++	n -= 2;
++
++	if (memcmp(bufr, "NOTIFY", 6) == 0)
++	{
++		char *loc = NULL, *srv = NULL, *nts = NULL, *nt = NULL;
++		int loc_len = 0;
++		//DPRINTF(E_DEBUG, L_SSDP, "Received SSDP notify:\n%.*s", n, bufr);
++		for (i = 0; i < n; i++)
++		{
++			if( bufr[i] == '*' )
++				break;
++		}
++		if (strcasestrc(bufr+i, "HTTP/1.1", '\r') == NULL)
++			return;
++		while (i < n)
++		{
++			while ((i < n) && (bufr[i] != '\r' || bufr[i+1] != '\n'))
++				i++;
++			i += 2;
++			if (strncasecmp(bufr+i, "SERVER:", 7) == 0)
++			{
++				srv = bufr+i+7;
++				while (*srv == ' ' || *srv == '\t')
++					srv++;
++			}
++			else if (strncasecmp(bufr+i, "LOCATION:", 9) == 0)
++			{
++				loc = bufr+i+9;
++				while (*loc == ' ' || *loc == '\t')
++					loc++;
++				while (loc[loc_len]!='\r' && loc[loc_len]!='\n')
++					loc_len++;
++			}
++			else if (strncasecmp(bufr+i, "NTS:", 4) == 0)
++			{
++				nts = bufr+i+4;
++				while (*nts == ' ' || *nts == '\t')
++					nts++;
++			}
++			else if (strncasecmp(bufr+i, "NT:", 3) == 0)
++			{
++				nt = bufr+i+3;
++				while(*nt == ' ' || *nt == '\t')
++					nt++;
++			}
++		}
++		if (!loc || !srv || !nt || !nts || (strncmp(nts, "ssdp:alive", 10) != 0) ||
++		    (strncmp(nt, "urn:schemas-upnp-org:device:MediaRenderer", 41) != 0))
++			return;
++		loc[loc_len] = '\0';
++
++		if ((strncmp(srv, "Allegro-Software-RomPlug", 24) == 0) || /* Roku */
++		    (strstr(loc, "SamsungMRDesc.xml") != NULL) || /* Samsung TV */
++		    (strstrc(srv, "DigiOn DiXiM", '\r') != NULL)) /* Marantz Receiver */
++		{
++			/* Check if the client is already in cache */
++			struct client_cache_s *client = SearchClientCacheV6(sendername.sin6_addr, 0);
++			if (client)
++			{
++				if (client->type->type < EStandardDLNA150 &&
++				    client->type->type != ESamsungSeriesA)
++				{
++					client->age = time(NULL);
++					return;
++				}
++			}
++			ParseUPnPClientV6(loc);
++		}
++	}
++	else if (memcmp(bufr, "M-SEARCH", 8) == 0)
++	{
++		int st_len = 0, mx_len = 0, mx_val = 0;
++		DPRINTF(E_DEBUG, L_SSDP, "Received SSDP request:\n%.*s\n", n, bufr);
++		for (i = 0; i < n; i++)
++		{
++			if (bufr[i] == '*')
++				break;
++		}
++		if (strcasestrc(bufr+i, "HTTP/1.1", '\r') == NULL)
++			return;
++		while (i < n)
++		{
++			while ((i < n) && (bufr[i] != '\r' || bufr[i+1] != '\n'))
++				i++;
++			i += 2;
++			if (strncasecmp(bufr+i, "ST:", 3) == 0)
++			{
++				st = bufr+i+3;
++				st_len = 0;
++				while (*st == ' ' || *st == '\t')
++					st++;
++				while (st[st_len]!='\r' && st[st_len]!='\n')
++					st_len++;
++			}
++			else if (strncasecmp(bufr+i, "MX:", 3) == 0)
++			{
++				mx = bufr+i+3;
++				mx_len = 0;
++				while (*mx == ' ' || *mx == '\t')
++					mx++;
++				while (mx[mx_len]!='\r' && mx[mx_len]!='\n')
++					mx_len++;
++				mx_val = strtol(mx, &mx_end, 10);
++			}
++			else if (strncasecmp(bufr+i, "MAN:", 4) == 0)
++			{
++				man = bufr+i+4;
++				man_len = 0;
++				while (*man == ' ' || *man == '\t')
++					man++;
++				while (man[man_len]!='\r' && man[man_len]!='\n')
++					man_len++;
++			}
++		}
++		/*DPRINTF(E_INFO, L_SSDP, "SSDP M-SEARCH packet received from %s:%d\n",
++			inet_ntoa(sendername.sin_addr), ntohs(sendername.sin_port) );*/
++		if (GETFLAG(DLNA_STRICT_MASK) && (ntohs(sendername.sin6_port) <= 1024 || ntohs(sendername.sin6_port) == 1900))
++		{
++			DPRINTF(E_INFO, L_SSDP, "WARNING: Ignoring invalid SSDP M-SEARCH from  [bad source port %d]\n",
++				 ntohs(sendername.sin6_port));
++		}
++		else if (!man || (strncmp(man, "\"ssdp:discover\"", 15) != 0))
++		{
++			DPRINTF(E_INFO, L_SSDP, "WARNING: Ignoring invalid SSDP M-SEARCH from  [bad %s header '%.*s']\n",
++				 "MAN", man_len, man);
++		}
++		else if (!mx || mx == mx_end || mx_val < 0)
++		{
++			DPRINTF(E_INFO, L_SSDP, "WARNING: Ignoring invalid SSDP M-SEARCH from  [bad %s header '%.*s']\n",
++				 "MX", mx_len, mx);
++		}
++		else if (st && (st_len > 0))
++		{
++			int l;
++#ifdef __linux__444
++			char host[INET6_ADDRSTRLEN] = "::1";
++			struct cmsghdr *cmsg;
++
++			/* find the interface we received the msg from */
++			for (cmsg = CMSG_FIRSTHDR(&mh); cmsg; cmsg = CMSG_NXTHDR(&mh, cmsg))
++			{
++				struct in6_addr addr;
++				struct in6_pktinfo *pi;
++				/* ignore the control headers that don't match what we want */
++				if (cmsg->cmsg_level != IPPROTO_IPV6 ||
++				    cmsg->cmsg_type != IPV6_PKTINFO)
++					continue;
++
++				pi = (struct in6_pktinfo *)CMSG_DATA(cmsg);
++				//addr = pi->ip6_addr;
++				//memcpy(addr.s6_addr,.s6_addr,16);
++				inet_ntop(AF_INET6, &pi->ipi6_addr, host, sizeof(host));
++			}
++#else
++			const char *host;
++			int iface;
++			iface=0;
++			/* find in which sub network the client is */
++			for (i = 0; i < n_lan_addr; i++)
++			{
++				if((sendername.sin6_addr.s6_addr[0] & lan_addr[i].mask6.s6_addr[0]) ==
++				   (lan_addr[i].addr6.s6_addr[0] & lan_addr[i].mask6.s6_addr[0]))
++				{
++					iface = i;
++					break;
++				}
++			}
++			if (n_lan_addr == i)
++			{
++				DPRINTF(E_DEBUG, L_SSDP, "Ignoring SSDP M-SEARCH on other interface %d[%s]\n",i,lan_addr[i].str6);
++				//return;
++			}
++			host = lan_addr[iface].str6;
++
++#endif
++			DPRINTF(E_DEBUG, L_SSDP, "SSDP M-SEARCH from :%d ST: %.*s, MX: %.*s, MAN: %.*s\n",
++				//inet_ntoa(sendername.sin_addr),
++				ntohs(sendername.sin6_port),
++				st_len, st, mx_len, mx, man_len, man);
++			/* Responds to request with a device as ST header */
++
++			for (i = 0; known_service_types[i]; i++)
++			{
++				l = strlen(known_service_types[i]);
++				if ((l > st_len) || (memcmp(st, known_service_types[i], l) != 0))
++					continue;
++				if (st_len != l)
++				{
++					/* Check version number - we only support 1. */
++					if ((st[l-1] == ':') && (st[l] == '1'))
++						l++;
++					while (l < st_len)
++					{
++						if (isdigit(st[l]))
++							break;
++						if (isspace(st[l]))
++						{
++							l++;
++							continue;
++						}
++						DPRINTF(E_MAXDEBUG, L_SSDP,
++							"Ignoring SSDP M-SEARCH with bad extra data '%c' []\n",
++							st[l]);
++						break;
++					}
++					if (l != st_len)
++						break;
++				}
++				_usleep(random()>>20);
++				SendSSDPResponseV6(s, sendername, i,
++						 host, port, len_r);
++				return;
++			}
++			/* Responds to request with ST: ssdp:all */
++			/* strlen("ssdp:all") == 8 */
++			if ((st_len == 8) && (memcmp(st, "ssdp:all", 8) == 0))
++			{
++				for (i=0; known_service_types[i]; i++)
++				{
++					l = strlen(known_service_types[i]);
++					SendSSDPResponseV6(s, sendername, i,
++							 host, port, len_r);
++				}
++			}
++		}
++		else
++		{
++			DPRINTF(E_INFO, L_SSDP, "Invalid SSDP M-SEARCH from :%d\n",
++				 ntohs(sendername.sin6_port));
++		}
++	}
++	else if (memcmp(bufr, "YOUKU-NOTIFY", 12) == 0)
++	{
++		return;
++	}
++	else
++	{
++		DPRINTF(E_WARN, L_SSDP, "Unknown udp packet received from :%d\n",
++			 ntohs(sendername.sin6_port));
++	}
++}
++
+ /* This will broadcast ssdp:byebye notifications to inform 
+  * the network that UPnP is going down. */
+ int
+-SendSSDPGoodbyes(int s)
++SendSSDPGoodbyesV4(int s)
+ {
+ 	struct sockaddr_in sockname;
+ 	int n, l;
+@@ -803,6 +1499,54 @@
+ 	return ret;
+ }
+ 
++/* This will broadcast ssdp:byebye notifications to inform 
++ * the network that UPnP is going down. */
++int
++SendSSDPGoodbyesV6(int s)
++{
++	struct sockaddr_in6 sockname;
++	int n, l;
++	int i;
++	int dup, ret = 0;
++	char bufr[512];
++
++	memset(&sockname, 0, sizeof(struct sockaddr_in6));
++	sockname.sin6_family = AF_INET6;
++	sockname.sin6_port = htons(SSDP_PORT);
++	inet_pton(AF_INET6, SSDP_IPV6_LINKLOCAL,&sockname.sin6_addr);
++	//sockname.sin_addr.s_addr = inet_addr(SSDP_MCAST_ADDR);
++
++	for (dup = 0; dup < 2; dup++)
++	{
++		for (i = 0; known_service_types[i]; i++)
++		{
++			l = snprintf(bufr, sizeof(bufr),
++					"NOTIFY * HTTP/1.1\r\n"
++					"HOST:[%s]:%d\r\n"
++					"NT:%s%s\r\n"
++					"USN:%s%s%s%s\r\n"
++					"NTS:ssdp:byebye\r\n"
++					"\r\n",
++					SSDP_IPV6_LINKLOCAL, SSDP_PORT,
++					known_service_types[i],
++					(i > 1 ? "1" : ""), uuidvalue,
++					(i > 0 ? "::" : ""),
++					(i > 0 ? known_service_types[i] : ""),
++					(i > 1 ? "1" : ""));
++			DPRINTF(E_MAXDEBUG, L_SSDP, "Sending ssdp:byebye [%d]\n", s);
++			n = sendto(s, bufr, l, 0,
++			           (struct sockaddr *)&sockname, sizeof(struct sockaddr_in6) );
++			if (n < 0)
++			{
++				DPRINTF(E_ERROR, L_SSDP, "sendto(udp_shutdown=%d): %s\n", s, strerror(errno));
++				ret = -1;
++				break;
++			}
++		}
++	}
++	return ret;
++}
++
+ /* SubmitServicesToMiniSSDPD() :
+  * register services offered by MiniUPnPd to a running instance of
+  * MiniSSDPd */
+@@ -852,7 +1596,7 @@
+ 		CODELENGTH(l, p);
+ 		memcpy(p, MINIDLNA_SERVER_STRING, l);
+ 		p += l;
+-		l = snprintf(strbuf, sizeof(strbuf), "http://%s:%u" ROOTDESC_PATH,
++		l = snprintf(strbuf, sizeof(strbuf), "http://[%s]:%u" ROOTDESC_PATH,
+ 		             host, (unsigned int)port);
+ 		CODELENGTH(l, p);
+ 		memcpy(p, strbuf, l);
+diff -Nur a/minissdp.h b/minissdp.h
+--- a/minissdp.h	2017-10-09 14:43:31.548669259 +0800
++++ b/minissdp.h	2017-10-09 17:40:00.298439106 +0800
+@@ -29,15 +29,23 @@
+ #ifndef __MINISSDP_H__
+ #define __MINISSDP_H__
+ 
+-int OpenAndConfSSDPReceiveSocket(void);
++int OpenAndConfSSDPReceiveSocketV6(void);
++int OpenAndConfSSDPReceiveSocketV4(void);
+ 
+-int OpenAndConfSSDPNotifySocket(struct lan_addr_s *iface);
++int OpenAndConfSSDPNotifySocketV6(struct lan_addr_s *iface);
++int OpenAndConfSSDPNotifySocketV4(struct lan_addr_s *iface);
+ 
+-void SendSSDPNotifies(int s, const char *host, unsigned short port, unsigned int lifetime);
++void SendSSDPNotifiesV4(int s, const char *host, unsigned short port, unsigned int lifetime);
++void SendSSDPNotifiesV6(int s, const char *host, unsigned short port, unsigned int lifetime);
+ 
+-void ProcessSSDPRequest(int s, unsigned short port);
+ 
+-int SendSSDPGoodbyes(int s);
++void ProcessSSDPRequestV4(int s, unsigned short port);
++void ProcessSSDPRequestV6(int s, unsigned short port);
++
++
++int SendSSDPGoodbyesV4(int s);
++int SendSSDPGoodbyesV6(int s);
++
+ 
+ int SubmitServicesToMiniSSDPD(const char *host, unsigned short port);
+ 
+diff -Nur a/monitor.c b/monitor.c
+--- a/monitor.c	2017-10-09 14:43:31.548669259 +0800
++++ b/monitor.c	2017-10-09 17:40:00.298439106 +0800
+@@ -321,7 +321,7 @@
+ 		sql_exec(db, "DELETE from DETAILS where ID = %lld", detailID);
+ 		sql_exec(db, "DELETE from OBJECTS where DETAIL_ID = %lld", detailID);
+ 	}
+-	snprintf(art_cache, sizeof(art_cache), "%s/art_cache%s", db_path, path);
++	snprintf(art_cache, sizeof(art_cache), "%s/art_cachev6%s", db_path, path);
+ 	remove(art_cache);
+ 
+ 	return 0;
+diff -Nur a/tivo_beacon.c b/tivo_beacon.c
+--- a/tivo_beacon.c	2017-10-09 14:43:31.556669214 +0800
++++ b/tivo_beacon.c	2017-10-09 17:40:00.298439106 +0800
+@@ -50,9 +50,9 @@
+ #include "tivo_beacon.h"
+ #include "upnpglobalvars.h"
+ #include "log.h"
+-
+-/* OpenAndConfHTTPSocket() :
+- * setup the socket used to handle incoming HTTP connections. */
++/*
++ //OpenAndConfHTTPSocket() :
++ // setup the socket used to handle incoming HTTP connections. 
+ int
+ OpenAndConfTivoBeaconSocket()
+ {
+@@ -93,9 +93,9 @@
+ 	return s;
+ }
+ 
+-/*
+- * Returns the interface broadcast address to be used for beacons
+- */
++
++ // Returns the interface broadcast address to be used for beacons
++ 
+ uint32_t
+ getBcastAddress(void)
+ {
+@@ -145,10 +145,10 @@
+ 	return ret;
+ }
+ 
+-/*
+- * Send outgoing beacon to the specified address
+- * This will either be a specific or broadcast address
+- */
++
++  //Send outgoing beacon to the specified address
++  //This will either be a specific or broadcast address
++ 
+ void
+ sendBeaconMessage(int fd, struct sockaddr_in * client, int len, int broadcast)
+ {
+@@ -170,12 +170,12 @@
+ 	sendto(fd, msg, msg_len, 0, (struct sockaddr*)client, len);
+ }
+ 
+-/*
+- * Parse and save a received beacon packet from another server, or from
+- * a TiVo.
+- *
+- * Returns true if this was a broadcast beacon msg
+- */
++
++  //Parse and save a received beacon packet from another server, or from
++ //a TiVo.
++ 
++ // Returns true if this was a broadcast beacon msg
++
+ static int
+ rcvBeaconMessage(char *beacon)
+ {
+@@ -250,7 +250,7 @@
+ 		lastSummary = current;
+ 
+ 	if( lastSummary + 1800 < current )
+-	{  /* Give a summary of received server beacons every half hour or so */
++	{  //Give a summary of received server beacons every half hour or so 
+ 		len = 0;
+ 		for( b = topBeacon; b != NULL; b = b->next )
+ 		{
+@@ -272,7 +272,7 @@
+ 		lastSummary = current;
+ 	}
+ #endif
+-	/* It's pointless to respond to a non-TiVo beacon. */
++	// It's pointless to respond to a non-TiVo beacon. 
+ 	if( strncmp(platform, "tcd/", 4) != 0 )
+ 		return 0;
+ 
+@@ -297,13 +297,13 @@
+ 	char bufr[1500];
+ 	len_r = sizeof(struct sockaddr_in);
+ 
+-	/* We only expect to see beacon msgs from TiVo's and possibly other tivo servers */
++	//We only expect to see beacon msgs from TiVo's and possibly other tivo servers 
+ 	n = recvfrom(s, bufr, sizeof(bufr), 0,
+ 	             (struct sockaddr *)&sendername, &len_r);
+ 	if( n > 0 )
+ 		bufr[n] = '\0';
+ 
+-	/* find which subnet the client is in */
++	//find which subnet the client is in 
+ 	for(n = 0; n<n_lan_addr; n++)
+ 	{
+ 		if( (sendername.sin_addr.s_addr & lan_addr[n].mask.s_addr)
+@@ -318,7 +318,8 @@
+ 	}
+ 
+ 	for( cp = bufr; *cp; cp++ )
+-		/* do nothing */;
++		// do nothing 
++		;
+ 	if( cp[-1] == '\r' || cp[-1] == '\n' )
+ 		*--cp = '\0';
+ 	if( cp[-1] == '\r' || cp[-1] == '\n' )
+@@ -327,4 +328,5 @@
+ 	if( rcvBeaconMessage(bufr) )
+ 		sendBeaconMessage(s, &sendername, len_r, 0);
+ }
++*/
+ #endif // TIVO_SUPPORT
+diff -Nur a/tivo_beacon.h b/tivo_beacon.h
+--- a/tivo_beacon.h	2017-10-09 14:43:31.556669214 +0800
++++ b/tivo_beacon.h	2017-10-09 17:40:00.298439106 +0800
+@@ -26,6 +26,7 @@
+ /*
+  *  * A saved copy of a beacon from another tivo or another server
+  *   */
++ /*
+ struct aBeacon
+ {
+ #ifdef DEBUG
+@@ -47,4 +48,5 @@
+ 
+ void
+ ProcessTiVoBeacon(int fd);
++*/
+ #endif
+diff -Nur a/tivo_commands.c b/tivo_commands.c
+--- a/tivo_commands.c	2017-10-09 14:43:31.556669214 +0800
++++ b/tivo_commands.c	2017-10-09 17:40:00.298439106 +0800
+@@ -17,6 +17,7 @@
+  */
+ #include "config.h"
+ #ifdef TIVO_SUPPORT
++/*
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -150,7 +151,7 @@
+ 			             "<ContentType>%s</ContentType>"
+ 			             "<SourceFormat>%s</SourceFormat>"
+ 			             "<SourceSize>%s</SourceSize>",
+-			             "audio/*", mime, size);
++			             "audio*", mime, size);
+ 			strcatf(str, "<SongTitle>%s</SongTitle>", title);
+ 			if( date )
+ 				strcatf(str, "<AlbumYear>%.*s</AlbumYear>", 4, date);
+@@ -162,7 +163,7 @@
+ 			             "<ContentType>%s</ContentType>"
+ 			             "<SourceFormat>%s</SourceFormat>"
+ 			             "<SourceSize>%s</SourceSize>",
+-			             "image/*", mime, size);
++			             "image*", mime, size);
+ 			if( date )
+ 			{
+ 				struct tm tm;
+@@ -243,7 +244,7 @@
+ 		if( flags & FLAG_VIDEO )
+ 		{
+ 			strcatf(str, "<CustomIcon>"
+-			               "<ContentType>image/*</ContentType>"
++			               "<ContentType>image*</ContentType>"
+ 			               "<Url>urn:tivo:image:save-until-i-delete-recording</Url>"
+ 			             "</CustomIcon>");
+ 		}
+@@ -252,8 +253,8 @@
+ 	else if( strncmp(class, "container", 9) == 0 )
+ 	{
+ 		int count;
+-		/* Determine the number of children */
+-#ifdef __sparc__ /* Adding filters on large containers can take a long time on slow processors */
++		// Determine the number of children 
++#ifdef __sparc__ // Adding filters on large containers can take a long time on slow processors 
+ 		count = sql_get_int_field(db, "SELECT count(*) from OBJECTS where PARENT_ID = '%s'", id);
+ #else
+ 		count = sql_get_int_field(db, "SELECT count(*) from OBJECTS o left join DETAILS d on (d.ID = o.DETAIL_ID) where PARENT_ID = '%s' and "
+@@ -439,7 +440,7 @@
+ 				}
+ 				else if( strcasecmp(item, "Title") == 0 )
+ 				{
+-					/* Explicitly sort music by track then title. */
++					// Explicitly sort music by track then title. 
+ 					if( title_state < 2 && *objectID == '1' )
+ 					{
+ 						if( !title_state )
+@@ -781,5 +782,5 @@
+ 	}
+ 	free(path);
+ 	CloseSocket_upnphttp(h);
+-}
++}*/
+ #endif // TIVO_SUPPORT
+diff -Nur a/tivo_commands.h b/tivo_commands.h
+--- a/tivo_commands.h	2017-10-09 14:43:31.560669190 +0800
++++ b/tivo_commands.h	2017-10-09 17:40:00.298439106 +0800
+@@ -23,8 +23,8 @@
+  */
+ #include "config.h"
+ #ifdef TIVO_SUPPORT
+-
++/*
+ void
+ ProcessTiVoCommand(struct upnphttp *h, const char *orig_path);
+-
++*/
+ #endif
+diff -Nur a/tivo_utils.c b/tivo_utils.c
+--- a/tivo_utils.c	2017-10-09 14:43:31.560669190 +0800
++++ b/tivo_utils.c	2017-10-09 17:40:00.298439106 +0800
+@@ -17,6 +17,7 @@
+  */
+ #include "config.h"
+ #ifdef TIVO_SUPPORT
++/*
+ #include <stdlib.h>
+ #include <stdint.h>
+ #include <string.h>
+@@ -27,7 +28,7 @@
+ #include <sqlite3.h>
+ #include "tivo_utils.h"
+ 
+-/* This function based on byRequest */
++//This function based on byRequest
+ char *
+ decodeString(char *string, int inplace)
+ {
+@@ -50,7 +51,7 @@
+ 		in = *string;
+ 		if((in == '%') && isxdigit(string[1]) && isxdigit(string[2]))
+ 		{
+-			/* this is two hexadecimal digits following a '%' */
++			//this is two hexadecimal digits following a '%' 
+ 			char hexstr[3];
+ 			char *ptr;
+ 			hexstr[0] = string[1];
+@@ -59,7 +60,7 @@
+ 
+ 			hex = strtol(hexstr, &ptr, 16);
+ 
+-			in = (unsigned char)hex; /* this long is never bigger than 255 anyway */
++			in = (unsigned char)hex; // this long is never bigger than 255 anyway 
+ 			if( inplace )
+ 			{
+ 				*string = in;
+@@ -82,12 +83,12 @@
+ 	}
+ 	else
+ 	{
+-		ns[strindex] = '\0'; /* terminate it */
++		ns[strindex] = '\0'; // terminate it
+ 		return ns;
+ 	}
+ }
+ 
+-/* These next functions implement a repeatable random function with a user-provided seed */
++// These next functions implement a repeatable random function with a user-provided seed
+ static int
+ seedRandomByte(uint32_t seed)
+ {
+@@ -112,7 +113,7 @@
+ 		}
+ 		sqlite3Prng.isInit = 1;
+ 	}
+-	/* Generate and return single random byte */
++	//Generate and return single random byte 
+ 	sqlite3Prng.i++;
+ 	t = sqlite3Prng.s[sqlite3Prng.i];
+ 	sqlite3Prng.j += t;
+@@ -151,7 +152,7 @@
+ 	unsigned char hdr[5] = { 'T','i','V','o','\0' };
+ 	int fd;
+ 
+-	/* read file header */
++	//read file header 
+ 	fd = open(path, O_RDONLY);
+ 	if( fd < 0 )
+ 		return 0;
+@@ -161,5 +162,5 @@
+ 
+ 	return !memcmp(buf, hdr, 5);
+ }
+-
++*/
+ #endif
+diff -Nur a/tivo_utils.h b/tivo_utils.h
+--- a/tivo_utils.h	2017-10-09 14:43:31.560669190 +0800
++++ b/tivo_utils.h	2017-10-09 17:40:00.298439106 +0800
+@@ -24,16 +24,16 @@
+ #include "config.h"
+ 
+ #ifdef TIVO_SUPPORT
++/*
+ #include <sqlite3.h>
+ 
+ struct sqlite3PrngType {
+-  unsigned char isInit;          /* True if initialized */
+-  unsigned char i, j;            /* State variables */
+-  unsigned char s[256];          /* State variables */
++  unsigned char isInit;          // True if initialized 
++  unsigned char i, j;            // State variables 
++  unsigned char s[256];          // State variables 
+ } sqlite3Prng;
+ 
+-char *
+-decodeString(char *string, int inplace);
++
+ 
+ void
+ TiVoRandomSeedFunc(sqlite3_context *context, int argc, sqlite3_value **argv);
+@@ -42,5 +42,9 @@
+ is_tivo_file(const char *path);
+ 
+ #else
++char *
++decodeString(char *string, int inplace);
++
+ #define decodeString(X, Y) ({})
++*/
+ #endif
+diff -Nur a/upnpevents.c b/upnpevents.c
+--- a/upnpevents.c	2017-10-09 14:43:31.564669169 +0800
++++ b/upnpevents.c	2017-10-09 17:40:00.298439106 +0800
+@@ -76,6 +76,7 @@
+ 	struct upnp_event_notify * notify;
+ 	time_t timeout;
+ 	uint32_t seq;
++	int notify_type;
+ 	enum subscriber_service_enum service;
+ 	char uuid[42];
+ 	char callback[];
+@@ -84,6 +85,7 @@
+ struct upnp_event_notify {
+ 	LIST_ENTRY(upnp_event_notify) entries;
+ 	int s;  /* socket */
++	int socket_type;
+ 	enum { ECreated=1,
+ 	       EConnecting,
+ 	       ESending,
+@@ -96,13 +98,17 @@
+ 	int tosend;
+ 	int sent;
+ 	const char * path;
+-	char addrstr[16];
++	char addrstr[INET6_ADDRSTRLEN+1];
+ 	char portstr[8];
++	
+ };
+ 
+ /* prototypes */
+ static void
+-upnp_event_create_notify(struct subscriber * sub);
++upnp_event_create_notifyV4(struct subscriber * sub);
++static void
++upnp_event_create_notifyV6(struct subscriber * sub);
++
+ 
+ /* Subscriber list */
+ LIST_HEAD(listhead, subscriber) subscriberlist = { NULL };
+@@ -147,7 +153,7 @@
+ /* creates a new subscriber and adds it to the subscriber list
+  * also initiate 1st notify */
+ const char *
+-upnpevents_addSubscriber(const char * eventurl,
++upnpevents_addSubscriberV4(const char * eventurl,
+                          const char * callback, int callbacklen,
+                          int timeout)
+ {
+@@ -161,9 +167,35 @@
+ 		return NULL;
+ 	if(timeout)
+ 		tmp->timeout = time(NULL) + timeout;
++	tmp->notify_type = 4;
+ 	LIST_INSERT_HEAD(&subscriberlist, tmp, entries);
+ 	nsubscribers++;
+-	upnp_event_create_notify(tmp);
++	upnp_event_create_notifyV4(tmp);
++	return tmp->uuid;
++}
++
++/* creates a new subscriber and adds it to the subscriber list
++ * also initiate 1st notify */
++const char *
++upnpevents_addSubscriberV6(const char * eventurl,
++                         const char * callback, int callbacklen,
++                         int timeout)
++{
++	struct subscriber * tmp;
++	DPRINTF(E_DEBUG, L_HTTP, "addSubscriber(%s, %.*s, %d)\n",
++	       eventurl, callbacklen, callback, timeout);
++	if (nsubscribers >= MAX_SUBSCRIBERS)
++		return NULL;
++	tmp = newSubscriber(eventurl, callback, callbacklen);
++	if(!tmp)
++		return NULL;
++	if(timeout)
++		tmp->timeout = time(NULL) + timeout;
++	tmp->notify_type = 6;
++	LIST_INSERT_HEAD(&subscriberlist, tmp, entries);
++	nsubscribers++;
++	DPRINTF(E_DEBUG, L_HTTP,"callback:%s\n",tmp->callback);
++	upnp_event_create_notifyV6(tmp);
+ 	return tmp->uuid;
+ }
+ 
+@@ -220,13 +252,13 @@
+ 	struct subscriber * sub;
+ 	for(sub = subscriberlist.lh_first; sub != NULL; sub = sub->entries.le_next) {
+ 		if(sub->service == service && sub->notify == NULL)
+-			upnp_event_create_notify(sub);
++			sub->notify_type == 4?upnp_event_create_notifyV4(sub):upnp_event_create_notifyV6(sub);
+ 	}
+ }
+ 
+ /* create and add the notify object to the list */
+ static void
+-upnp_event_create_notify(struct subscriber * sub)
++upnp_event_create_notifyV4(struct subscriber * sub)
+ {
+ 	struct upnp_event_notify * obj;
+ 	int flags;
+@@ -252,6 +284,7 @@
+ 		       "upnp_event_create_notify", strerror(errno));
+ 		goto error;
+ 	}
++	obj->socket_type = 4;
+ 	if(sub)
+ 		sub->notify = obj;
+ 	LIST_INSERT_HEAD(&notifylist, obj, entries);
+@@ -262,8 +295,48 @@
+ 	free(obj);
+ }
+ 
++/* create and add the notify object to the list */
+ static void
+-upnp_event_notify_connect(struct upnp_event_notify * obj)
++upnp_event_create_notifyV6(struct subscriber * sub)
++{
++	struct upnp_event_notify * obj;
++	int flags;
++	obj = calloc(1, sizeof(struct upnp_event_notify));
++	if(!obj) {
++		DPRINTF(E_ERROR, L_HTTP, "%s: calloc(): %s\n", "upnp_event_create_notify", strerror(errno));
++		return;
++	}
++	obj->sub = sub;
++	obj->state = ECreated;
++	obj->s = socket(PF_INET6, SOCK_STREAM, 0);
++	if(obj->s<0) {
++		DPRINTF(E_ERROR, L_HTTP, "%s: socket(): %s\n", "upnp_event_create_notify", strerror(errno));
++		goto error;
++	}
++	if((flags = fcntl(obj->s, F_GETFL, 0)) < 0) {
++		DPRINTF(E_ERROR, L_HTTP, "%s: fcntl(..F_GETFL..): %s\n",
++		       "upnp_event_create_notify", strerror(errno));
++		goto error;
++	}
++	if(fcntl(obj->s, F_SETFL, flags | O_NONBLOCK) < 0) {
++		DPRINTF(E_ERROR, L_HTTP, "%s: fcntl(..F_SETFL..): %s\n",
++		       "upnp_event_create_notify", strerror(errno));
++		goto error;
++	}
++	obj->socket_type = 6;
++	if(sub)
++		sub->notify = obj;
++	DPRINTF(E_ERROR, L_HTTP,"%s\n",obj->sub->callback);
++	LIST_INSERT_HEAD(&notifylist, obj, entries);
++	return;
++error:
++	if(obj->s >= 0)
++		close(obj->s);
++	free(obj);
++}
++
++static void
++upnp_event_notify_connectV4(struct upnp_event_notify * obj)
+ {
+ 	int i;
+ 	const char * p;
+@@ -314,11 +387,110 @@
+ 	}
+ }
+ 
+-static void upnp_event_prepare(struct upnp_event_notify * obj)
++static void
++upnp_event_notify_connectV6(struct upnp_event_notify * obj)
++{  
++	int i;
++	const char * p;
++	unsigned short port;
++	struct sockaddr_in6 addr;
++	if(!obj)
++		return;
++	memset(&addr, 0, sizeof(addr));
++	i = 0;
++	if(obj->sub == NULL) {
++		obj->state = EError;
++		return;
++	}
++	p = obj->sub->callback;
++	p += 8;	/* http:// */
++	while(*p != '/' && *p != ']' && i < (sizeof(obj->addrstr)-1))
++		obj->addrstr[i++] = *(p++);
++	obj->addrstr[i] = '\0';
++	p+=1;
++	if(*p == ':') {
++		obj->portstr[0] = *p;
++		i = 1;
++		p++;
++		port = (unsigned short)atoi(p);
++		while(*p != '/' && *p != '\0') {
++			if(i<7) obj->portstr[i++] = *p;
++			p++;
++		}
++		obj->portstr[i] = 0;
++	} else {
++		port = 80;
++		obj->portstr[0] = '\0';
++	}
++	if( *p )
++		obj->path = p;
++	else
++		obj->path = "/";
++	addr.sin6_family = AF_INET6;
++	//inet_aton(obj->addrstr, &addr.sin_addr);
++	inet_pton(AF_INET6,obj->addrstr,&addr.sin6_addr);
++	addr.sin6_port = htons(port);
++	DPRINTF(E_DEBUG, L_HTTP, "%s: '%s' %hu '%s'\n", "upnp_event_notify_connect",
++	       obj->addrstr, port, obj->path);
++	obj->state = EConnecting;
++	if(connect(obj->s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
++		if(errno != EINPROGRESS && errno != EWOULDBLOCK) {
++			DPRINTF(E_ERROR, L_HTTP, "%s: connect(): %s\n", "upnp_event_notify_connect", strerror(errno));
++			obj->state = EError;
++		}
++	}
++}
++
++static void upnp_event_prepareV4(struct upnp_event_notify * obj)
++{
++	static const char notifymsg[] = 
++		"NOTIFY %s HTTP/1.1\r\n"
++		"Host: %s:%s\r\n"
++		"Content-Type: text/xml; charset=\"utf-8\"\r\n"
++		"Content-Length: %d\r\n"
++		"NT: upnp:event\r\n"
++		"NTS: upnp:propchange\r\n"
++		"SID: %s\r\n"
++		"SEQ: %u\r\n"
++		"Connection: close\r\n"
++		"Cache-Control: no-cache\r\n"
++		"\r\n"
++		"%.*s\r\n";
++	char * xml;
++	int l;
++	if(obj->sub == NULL) {
++		obj->state = EError;
++		return;
++	}
++	switch(obj->sub->service) {
++	case EContentDirectory:
++		xml = getVarsContentDirectory(&l);
++		break;
++	case EConnectionManager:
++		xml = getVarsConnectionManager(&l);
++		break;
++	case EMSMediaReceiverRegistrar:
++		xml = getVarsX_MS_MediaReceiverRegistrar(&l);
++		break;
++	default:
++		xml = NULL;
++		l = 0;
++	}
++	obj->tosend = asprintf(&(obj->buffer), notifymsg,
++	                       obj->path, obj->addrstr, obj->portstr, l+2,
++	                       obj->sub->uuid, obj->sub->seq,
++	                       l, xml);
++	obj->buffersize = obj->tosend;
++	free(xml);
++	DPRINTF(E_DEBUG, L_HTTP, "Sending UPnP Event response:\n%s\n", obj->buffer);
++	obj->state = ESending;
++}
++
++static void upnp_event_prepareV6(struct upnp_event_notify * obj)
+ {
+ 	static const char notifymsg[] = 
+ 		"NOTIFY %s HTTP/1.1\r\n"
+-		"Host: %s%s\r\n"
++		"Host: [%s]:%s\r\n"
+ 		"Content-Type: text/xml; charset=\"utf-8\"\r\n"
+ 		"Content-Length: %d\r\n"
+ 		"NT: upnp:event\r\n"
+@@ -402,7 +574,7 @@
+ 	switch(obj->state) {
+ 	case EConnecting:
+ 		/* now connected or failed to connect */
+-		upnp_event_prepare(obj);
++		obj->socket_type == 4?upnp_event_prepareV4(obj):upnp_event_prepareV6(obj);
+ 		upnp_event_send(obj);
+ 		break;
+ 	case ESending:
+@@ -429,7 +601,7 @@
+ 		if(obj->s >= 0) {
+ 			switch(obj->state) {
+ 			case ECreated:
+-				upnp_event_notify_connect(obj);
++				obj->socket_type==4?upnp_event_notify_connectV4(obj):upnp_event_notify_connectV6(obj);
+ 				if(obj->state != EConnecting)
+ 					break;
+ 			case EConnecting:
+diff -Nur a/upnpevents.h b/upnpevents.h
+--- a/upnpevents.h	2017-10-09 14:43:31.564669169 +0800
++++ b/upnpevents.h	2017-10-09 17:40:00.298439106 +0800
+@@ -57,9 +57,14 @@
+ upnp_event_var_change_notify(enum subscriber_service_enum service);
+ 
+ const char *
+-upnpevents_addSubscriber(const char * eventurl,
++upnpevents_addSubscriberV4(const char * eventurl,
+                          const char * callback, int callbacklen,
+                          int timeout);
++const char *
++upnpevents_addSubscriberV6(const char * eventurl,
++                         const char * callback, int callbacklen,
++                         int timeout);
++
+ 
+ int upnpevents_removeSubscriber(const char * sid, int sidlen);
+ void upnpevents_removeSubscribers(void);
+diff -Nur a/upnpglobalvars.c b/upnpglobalvars.c
+--- a/upnpglobalvars.c	2017-10-09 14:43:31.564669169 +0800
++++ b/upnpglobalvars.c	2017-10-09 17:40:00.298439106 +0800
+@@ -60,7 +60,7 @@
+ struct runtime_vars_s runtime_vars;
+ uint32_t runtime_flags = INOTIFY_MASK | TIVO_BONJOUR_MASK;
+ 
+-const char *pidfilename = "/var/run/minidlna/minidlna.pid";
++const char *pidfilename = "/var/run/minidlna/minidlnaipv6.pid";
+ 
+ char uuidvalue[] = "uuid:00000000-0000-0000-0000-000000000000";
+ char modelname[MODELNAME_MAX_LEN] = ROOTDEV_MODELNAME;
+@@ -73,10 +73,12 @@
+ 
+ int n_lan_addr = 0;
+ struct lan_addr_s lan_addr[MAX_LAN_ADDR];
+-int sssdp = -1;
++int sssdp4 = -1;
++int sssdp6 = -1;
++
+ 
+ /* Path of the Unix socket used to communicate with MiniSSDPd */
+-const char * minissdpdsocketpath = "/var/run/minissdpd.sock";
++const char * minissdpdsocketpath = "/var/run/minissdpdipv6.sock";
+ 
+ /* UPnP-A/V [DLNA] */
+ sqlite3 *db;
+diff -Nur a/upnpglobalvars.h b/upnpglobalvars.h
+--- a/upnpglobalvars.h	2017-10-09 14:43:31.568669146 +0800
++++ b/upnpglobalvars.h	2017-10-09 17:40:00.298439106 +0800
+@@ -213,14 +213,14 @@
+ #define SERIALNUMBER_MAX_LEN 16
+ extern char serialnumber[];
+ 
+-#define PRESENTATIONURL_MAX_LEN 64
++#define PRESENTATIONURL_MAX_LEN 128
+ extern char presentationurl[];
+ 
+ /* lan addresses */
+ extern int n_lan_addr;
+ extern struct lan_addr_s lan_addr[];
+-extern int sssdp;
+-
++extern int sssdp4;
++extern int sssdp6;
+ extern const char *minissdpdsocketpath;
+ 
+ /* UPnP-A/V [DLNA] */
+diff -Nur a/upnphttp.c b/upnphttp.c
+--- a/upnphttp.c	2017-10-09 14:43:31.568669146 +0800
++++ b/upnphttp.c	2017-10-09 17:40:00.298439106 +0800
+@@ -102,6 +102,66 @@
+ static void SendResp_thumbnail(struct upnphttp *, char * url);
+ static void SendResp_dlnafile(struct upnphttp *, char * url);
+ 
++//This function based on byRequest
++char *
++decodeString(char *string, int inplace)
++{
++	if( !string )
++		return NULL;
++	int alloc = (int)strlen(string)+1;
++	char *ns = NULL;
++	unsigned char in;
++	int strindex=0;
++	long hex;
++
++	if( !inplace )
++	{
++		if( !(ns = malloc(alloc)) )
++			return NULL;
++	}
++
++	while(--alloc > 0)
++	{
++		in = *string;
++		if((in == '%') && isxdigit(string[1]) && isxdigit(string[2]))
++		{
++			//this is two hexadecimal digits following a '%' 
++			char hexstr[3];
++			char *ptr;
++			hexstr[0] = string[1];
++			hexstr[1] = string[2];
++			hexstr[2] = 0;
++
++			hex = strtol(hexstr, &ptr, 16);
++
++			in = (unsigned char)hex; // this long is never bigger than 255 anyway 
++			if( inplace )
++			{
++				*string = in;
++				memmove(string+1, string+3, alloc-2);
++			}
++			else
++			{
++				string+=2;
++			}
++			alloc-=2;
++		}
++		if( !inplace )
++			ns[strindex++] = in;
++		string++;
++	}
++	if( inplace )
++	{
++		free(ns);
++		return string;
++	}
++	else
++	{
++		ns[strindex] = '\0'; // terminate it
++		return ns;
++	}
++}
++
+ struct upnphttp * 
+ New_upnphttp(int s)
+ {
+@@ -264,23 +324,44 @@
+ 			else if(strncasecmp(line, "Host", 4)==0)
+ 			{
+ 				int i;
+-				h->reqflags |= FLAG_HOST;
+-				p = colon + 1;
+-				while(isspace(*p))
+-					p++;
+-				for(n = 0; n<n_lan_addr; n++)
+-				{
+-					for(i=0; lan_addr[n].str[i]; i++)
+-					{
+-						if(lan_addr[n].str[i] != p[i])
+-							break;
+-					}
+-					if(!lan_addr[n].str[i])
+-					{
+-						h->iface = n;
+-						break;
+-					}
+-				}
++				if(h->socket_type == 6){
++    				h->reqflags |= FLAG_HOST;
++    				p = colon + 1;
++    				while(isspace(*p))
++    					p++;
++    				for(n = 0; n<n_lan_addr; n++)
++    				{
++    					for(i=0; lan_addr[n].str6[i]; i++)
++    					{
++    						if(lan_addr[n].str6[i] != p[i])
++    							break;
++    					}
++    					if(!lan_addr[n].str6[i])
++    					{
++    						h->iface = n;
++    						break;
++    					}
++    				}
++    				h->iface = 0;
++			    }else{
++                    h->reqflags |= FLAG_HOST;
++    				p = colon + 1;
++    				while(isspace(*p))
++    					p++;
++    				for(n = 0; n<n_lan_addr; n++)
++    				{
++    					for(i=0; lan_addr[n].str4[i]; i++)
++    					{
++    						if(lan_addr[n].str4[i] != p[i])
++    							break;
++    					}
++    					if(!lan_addr[n].str4[i])
++    					{
++    						h->iface = n;
++    						break;
++    					}
++    				}
++			    }
+ 			}
+ 			else if(strncasecmp(line, "User-Agent", 10)==0)
+ 			{
+@@ -442,11 +523,22 @@
+ 	/* If the client type wasn't found, search the cache.
+ 	 * This is done because a lot of clients like to send a
+ 	 * different User-Agent with different types of requests. */
+-	h->req_client = SearchClientCache(h->clientaddr, 0);
++	 if(h->socket_type == 4){
++        h->req_client = SearchClientCacheV4(h->clientaddr4, 0);
++	 }else{
++	    h->req_client = SearchClientCacheV6(h->clientaddr6, 0);
++	 }
++        
+ 	/* Add this client to the cache if it's not there already. */
++	
+ 	if (!h->req_client)
+ 	{
+-		h->req_client = AddClientCache(h->clientaddr, client);
++	    if(h->socket_type == 4){
++	        h->req_client = AddClientCacheV4(h->clientaddr4, client);
++	    }else{
++            h->req_client = AddClientCacheV6(h->clientaddr6, client);
++	    }
++		
+ 	}
+ 	else if (client)
+ 	{
+@@ -608,10 +700,9 @@
+ {
+ 	struct string_s str;
+ 	char body[4096];
+-	int a, v, p, i;
+-
++	int a, v, p, i,count=0;
++    char addr6[INET6_ADDRSTRLEN] = {0};
+ 	INIT_STR(str, body);
+-
+ 	h->respflags = FLAG_HTML;
+ 
+ 	a = sql_get_int_field(db, "SELECT count(*) from DETAILS where MIME glob 'a*'");
+@@ -621,7 +712,6 @@
+ 		"<HTML><HEAD><TITLE>" SERVER_NAME " " MINIDLNA_VERSION "</TITLE></HEAD>"
+ 		"<BODY><div style=\"text-align: center\">"
+ 		"<h2>" SERVER_NAME " status</h2></div>");
+-
+ 	strcatf(&str,
+ 		"<h3>Media library</h3>"
+ 		"<table border=1 cellpadding=10>"
+@@ -633,25 +723,30 @@
+ 	if (GETFLAG(SCANNING_MASK))
+ 		strcatf(&str,
+ 			"<br><i>* Media scan in progress</i><br>");
+-
+ 	strcatf(&str,
+ 		"<h3>Connected clients</h3>"
+ 		"<table border=1 cellpadding=10>"
+ 		"<tr><td>ID</td><td>Type</td><td>IP Address</td><td>HW Address</td><td>Connections</td></tr>");
+ 	for (i = 0; i < CLIENT_CACHE_SLOTS; i++)
+-	{
+-		if (!clients[i].addr.s_addr)
++	{   
++		if (!clients[i].type)
+ 			continue;
++		memset(addr6,0,sizeof(addr6));
++		if(clients[i].client_type == 6){
++		    inet_ntop(AF_INET6,&clients[i].addr6,addr6,sizeof(addr6));
++		}else{
++            sprintf(addr6,"%s",inet_ntoa(clients[i].addr4));
++		}
+ 		strcatf(&str, "<tr><td>%d</td><td>%s</td><td>%s</td><td>%02X:%02X:%02X:%02X:%02X:%02X</td><td>%d</td></tr>",
+-				i, clients[i].type->name, inet_ntoa(clients[i].addr),
++				i, clients[i].type->name, addr6,
+ 				clients[i].mac[0], clients[i].mac[1], clients[i].mac[2],
+ 				clients[i].mac[3], clients[i].mac[4], clients[i].mac[5], clients[i].connections);
++		if(clients[i].connections)
++		    count++;
+ 	}
+ 	strcatf(&str, "</table>");
+-
+-	strcatf(&str, "<br>%d connection%s currently open<br>", number_of_children, (number_of_children == 1 ? "" : "s"));
++	strcatf(&str, "<br>%d connection%s currently open<br>", count, (count == 1 ? "" : "s"));
+ 	strcatf(&str, "</BODY></HTML>\r\n");
+-
+ 	BuildResp_upnphttp(h, str.data, str.off);
+ 	SendResp_upnphttp(h);
+ 	CloseSocket_upnphttp(h);
+@@ -754,8 +849,13 @@
+ 		 * - respond HTTP/x.x 200 OK 
+ 		 * - Send the initial event message */
+ 		/* Server:, SID:; Timeout: Second-(xx|infinite) */
+-		sid = upnpevents_addSubscriber(path, h->req_Callback,
+-		                               h->req_CallbackLen, h->req_Timeout);
++		if(h->socket_type == 4){
++		    sid = upnpevents_addSubscriberV4(path, h->req_Callback,
++		                                   h->req_CallbackLen, h->req_Timeout);
++		}else{
++            sid = upnpevents_addSubscriberV6(path, h->req_Callback,
++		                                   h->req_CallbackLen, h->req_Timeout);
++		}
+ 		h->respflags = FLAG_TIMEOUT;
+ 		if (sid)
+ 		{
+@@ -838,14 +938,26 @@
+ 	HttpVer[i] = '\0';
+ 
+ 	/* set the interface here initially, in case there is no Host header */
+-	for(i = 0; i<n_lan_addr; i++)
+-	{
+-		if( (h->clientaddr.s_addr & lan_addr[i].mask.s_addr)
+-		   == (lan_addr[i].addr.s_addr & lan_addr[i].mask.s_addr))
+-		{
+-			h->iface = i;
+-			break;
+-		}
++	if(h->socket_type==6){
++    	for(i = 0; i<n_lan_addr; i++)
++    	{
++    		if( ((h->clientaddr6.s6_addr[0] & lan_addr[i].mask6.s6_addr[0])
++    		   == (lan_addr[i].addr6.s6_addr[0] & lan_addr[i].mask6.s6_addr[0])))
++    		{
++    			h->iface = i;
++    			break;
++    		}
++    	}
++	}else{
++        for(i = 0; i<n_lan_addr; i++)
++	    {
++		    if( (h->clientaddr4.s_addr & lan_addr[i].mask4.s_addr)
++		        == (lan_addr[i].addr4.s_addr & lan_addr[i].mask4.s_addr))
++		    {
++			    h->iface = i;
++			    break;
++		    }
++	    }
+ 	}
+ 
+ 	ParseHttpHeaders(h);
+@@ -895,7 +1007,7 @@
+ 	else if((strcmp("GET", HttpCommand) == 0) || (strcmp("HEAD", HttpCommand) == 0))
+ 	{
+ 		if( ((strcmp(h->HttpVer, "HTTP/1.1")==0) && !(h->reqflags & FLAG_HOST)) || (h->reqflags & FLAG_INVALID_REQ) )
+-		{
++		{ 
+ 			DPRINTF(E_WARN, L_HTTP, "Invalid request, responding ERROR 400.  (No Host specified in HTTP headers?)\n");
+ 			Send400(h);
+ 			return;
+@@ -903,7 +1015,7 @@
+ 		/* 7.3.33.4 */
+ 		else if( (h->reqflags & (FLAG_TIMESEEK|FLAG_PLAYSPEED)) &&
+ 		         !(h->reqflags & FLAG_RANGE) )
+-		{
++		{   
+ 			DPRINTF(E_WARN, L_HTTP, "DLNA %s requested, responding ERROR 406\n",
+ 				h->reqflags&FLAG_TIMESEEK ? "TimeSeek" : "PlaySpeed");
+ 			Send406(h);
+@@ -917,6 +1029,7 @@
+ 		{
+ 			h->req_command = EHead;
+ 		}
++
+ 		if(strcmp(ROOTDESC_PATH, HttpUrl) == 0)
+ 		{
+ 			/* If it's a Xbox360, we might need a special friendly_name to be recognized */
+@@ -970,6 +1083,7 @@
+ 			SendResp_albumArt(h, HttpUrl+10);
+ 		}
+ 		#ifdef TIVO_SUPPORT
++		/*
+ 		else if(strncmp(HttpUrl, "/TiVoConnect", 12) == 0)
+ 		{
+ 			if( GETFLAG(TIVO_MASK) )
+@@ -991,6 +1105,7 @@
+ 				Send404(h);
+ 			}
+ 		}
++		*/
+ 		#endif
+ 		else if(strncmp(HttpUrl, "/Resized/", 9) == 0)
+ 		{
+@@ -1620,7 +1735,7 @@
+ 	char *resolution = NULL;
+ 	char *key, *val;
+ 	char *saveptr, *item = NULL;
+-	int rotate;
++	int rotate=0;
+ 	int pixw = 0, pixh = 0;
+ 	long long id;
+ 	int rows=0, chunked, ret;
+@@ -1750,16 +1865,24 @@
+ 		strcpy(dlna_pn, "DLNA.ORG_PN=JPEG_MED;");
+ 	else
+ 		strcpy(dlna_pn, "DLNA.ORG_PN=JPEG_LRG;");
+-
++    /*
+ 	if( srcw>>4 >= dstw && srch>>4 >= dsth)
+ 		scale = 8;
+ 	else if( srcw>>3 >= dstw && srch>>3 >= dsth )
+ 		scale = 4;
+ 	else if( srcw>>2 >= dstw && srch>>2 >= dsth )
+ 		scale = 2;
+-
++    */
++    if(srcw>=4000&&srcw<=6000)
++        scale = 4;
++    else if(srcw>1980&&srcw<4000)
++        scale = 2;
++    else if(srcw<=1980&&srcw>0)
++        scale = 1;
++    else
++        scale = 8;
+ 	INIT_STR(str, header);
+-
++    DPRINTF(E_ERROR, L_HTTP,"dstw:%d\tdsth:%d\twidth:%d\theight:%d\tsrcw:%d\tsrch:%d\n",dstw,dsth,width,height,srcw,srch);
+ #if USE_FORK
+ 	if( (h->reqflags & FLAG_XFERBACKGROUND) && (setpriority(PRIO_PROCESS, 0, 19) == 0) )
+ 		tmode = "Background";
+@@ -2040,9 +2163,15 @@
+ 
+ 	if( h->reqflags & FLAG_CAPTION )
+ 	{
+-		if( sql_get_int_field(db, "SELECT ID from CAPTIONS where ID = '%lld'", (long long)id) > 0 )
++	    if(h->socket_type == 6){
++    		if( sql_get_int_field(db, "SELECT ID from CAPTIONS where ID = '%lld'", (long long)id) > 0 )
++    			strcatf(&str, "CaptionInfo.sec: http://[%s]:%d/Captions/%lld.srt\r\n",
++    			              lan_addr[h->iface].str6, runtime_vars.port, (long long)id);
++	    }else{
++            if( sql_get_int_field(db, "SELECT ID from CAPTIONS where ID = '%lld'", (long long)id) > 0 )
+ 			strcatf(&str, "CaptionInfo.sec: http://%s:%d/Captions/%lld.srt\r\n",
+-			              lan_addr[h->iface].str, runtime_vars.port, (long long)id);
++			              lan_addr[h->iface].str4, runtime_vars.port, (long long)id);
++	    }
+ 	}
+ 
+ 	strcatf(&str, "Accept-Ranges: bytes\r\n"
+diff -Nur a/upnphttp.h b/upnphttp.h
+--- a/upnphttp.h	2017-10-09 14:43:31.568669146 +0800
++++ b/upnphttp.h	2017-10-09 17:40:00.298439106 +0800
+@@ -76,7 +76,9 @@
+ 
+ struct upnphttp {
+ 	int socket;
+-	struct in_addr clientaddr;	/* client address */
++	int socket_type;
++	struct in6_addr clientaddr6;	/* client address */
++	struct in_addr clientaddr4;
+ 	int iface;
+ 	int state;
+ 	char HttpVer[16];
+diff -Nur a/upnpsoap.c b/upnpsoap.c
+--- a/upnpsoap.c	2017-10-09 14:43:31.568669146 +0800
++++ b/upnpsoap.c	2017-10-09 17:40:00.298439106 +0800
+@@ -679,7 +679,7 @@
+ }
+ 
+ inline static void
+-add_resized_res(int srcw, int srch, int reqw, int reqh, char *dlna_pn,
++add_resized_resV4(int srcw, int srch, int reqw, int reqh, char *dlna_pn,
+                 char *detailID, struct Response *args)
+ {
+ 	int dstw = reqw;
+@@ -704,12 +704,42 @@
+ 	                          "http://%s:%d/Resized/%s.jpg?width=%d,height=%d"
+ 	                          "&lt;/res&gt;",
+ 	                          dlna_pn, DLNA_FLAG_DLNA_V1_5|DLNA_FLAG_HTTP_STALLING|DLNA_FLAG_TM_B|DLNA_FLAG_TM_I, 0,
+-	                          lan_addr[args->iface].str, runtime_vars.port,
++	                          lan_addr[args->iface].str4, runtime_vars.port,
+ 	                          detailID, dstw, dsth);
+ }
+ 
+ inline static void
+-add_res(char *size, char *duration, char *bitrate, char *sampleFrequency,
++add_resized_resV6(int srcw, int srch, int reqw, int reqh, char *dlna_pn,
++                char *detailID, struct Response *args)
++{
++	int dstw = reqw;
++	int dsth = reqh;
++
++	if( (args->flags & FLAG_NO_RESIZE) && reqw > 160 && reqh > 160 )
++		return;
++
++	strcatf(args->str, "&lt;res ");
++	if( args->filter & FILTER_RES_RESOLUTION )
++	{
++		dstw = reqw;
++		dsth = ((((reqw<<10)/srcw)*srch)>>10);
++		if( dsth > reqh ) {
++			dsth = reqh;
++			dstw = (((reqh<<10)/srch) * srcw>>10);
++		}
++		strcatf(args->str, "resolution=\"%dx%d\" ", dstw, dsth);
++	}
++	strcatf(args->str, "protocolInfo=\"http-get:*:image/jpeg:"
++	                          "DLNA.ORG_PN=%s;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=%08X%024X\"&gt;"
++	                          "http://[%s]:%d/Resized/%s.jpg?width=%d,height=%d"
++	                          "&lt;/res&gt;",
++	                          dlna_pn, DLNA_FLAG_DLNA_V1_5|DLNA_FLAG_HTTP_STALLING|DLNA_FLAG_TM_B|DLNA_FLAG_TM_I, 0,
++	                          lan_addr[args->iface].str6, runtime_vars.port,
++	                          detailID, dstw, dsth);
++}
++
++inline static void
++add_resV4(char *size, char *duration, char *bitrate, char *sampleFrequency,
+         char *nrAudioChannels, char *resolution, char *dlna_pn, char *mime,
+         char *detailID, const char *ext, struct Response *args)
+ {
+@@ -743,13 +773,58 @@
+ 				strcatf(args->str, "pv:subtitleFileType=\"SRT\" ");
+ 			if( args->filter & FILTER_PV_SUBTITLE_FILE_URI )
+ 				strcatf(args->str, "pv:subtitleFileUri=\"http://%s:%d/Captions/%s.srt\" ",
+-					lan_addr[args->iface].str, runtime_vars.port, detailID);
++					lan_addr[args->iface].str4, runtime_vars.port, detailID);
+ 		}
+ 	}
+ 	strcatf(args->str, "protocolInfo=\"http-get:*:%s:%s\"&gt;"
+ 	                          "http://%s:%d/MediaItems/%s.%s"
+ 	                          "&lt;/res&gt;",
+-	                          mime, dlna_pn, lan_addr[args->iface].str,
++	                          mime, dlna_pn, lan_addr[args->iface].str4,
++	                          runtime_vars.port, detailID, ext);
++}
++
++inline static void
++add_resV6(char *size, char *duration, char *bitrate, char *sampleFrequency,
++        char *nrAudioChannels, char *resolution, char *dlna_pn, char *mime,
++        char *detailID, const char *ext, struct Response *args)
++{
++	strcatf(args->str, "&lt;res ");
++	if( size && (args->filter & FILTER_RES_SIZE) ) {
++		strcatf(args->str, "size=\"%s\" ", size);
++	}
++	if( duration && (args->filter & FILTER_RES_DURATION) ) {
++		strcatf(args->str, "duration=\"%s\" ", duration);
++	}
++	if( bitrate && (args->filter & FILTER_RES_BITRATE) ) {
++		int br = atoi(bitrate);
++		if(args->flags & FLAG_MS_PFS)
++			br /= 8;
++		strcatf(args->str, "bitrate=\"%d\" ", br);
++	}
++	if( sampleFrequency && (args->filter & FILTER_RES_SAMPLEFREQUENCY) ) {
++		strcatf(args->str, "sampleFrequency=\"%s\" ", sampleFrequency);
++	}
++	if( nrAudioChannels && (args->filter & FILTER_RES_NRAUDIOCHANNELS) ) {
++		strcatf(args->str, "nrAudioChannels=\"%s\" ", nrAudioChannels);
++	}
++	if( resolution && (args->filter & FILTER_RES_RESOLUTION) ) {
++		strcatf(args->str, "resolution=\"%s\" ", resolution);
++	}
++	if( args->filter & FILTER_PV_SUBTITLE )
++	{
++		if( args->flags & FLAG_HAS_CAPTIONS )
++		{
++			if( args->filter & FILTER_PV_SUBTITLE_FILE_TYPE )
++				strcatf(args->str, "pv:subtitleFileType=\"SRT\" ");
++			if( args->filter & FILTER_PV_SUBTITLE_FILE_URI )
++				strcatf(args->str, "pv:subtitleFileUri=\"http://[%s]:%d/Captions/%s.srt\" ",
++					lan_addr[args->iface].str6, runtime_vars.port, detailID);
++		}
++	}
++	strcatf(args->str, "protocolInfo=\"http-get:*:%s:%s\"&gt;"
++	                          "http://[%s]:%d/MediaItems/%s.%s"
++	                          "&lt;/res&gt;",
++	                          mime, dlna_pn, lan_addr[args->iface].str6,
+ 	                          runtime_vars.port, detailID, ext);
+ }
+ 
+@@ -787,7 +862,7 @@
+ #define IS_ZERO(x) (!x || !atoi(x))
+ 
+ static int
+-callback(void *args, int argc, char **argv, char **azColName)
++callbackV4(void *args, int argc, char **argv, char **azColName)
+ {
+ 	struct Response *passed_args = (struct Response *)args;
+ 	char *id = argv[0], *parent = argv[1], *refID = argv[2], *detailID = argv[3], *class = argv[4], *size = argv[5], *title = argv[6],
+@@ -1006,28 +1081,28 @@
+ 		}
+ 		if( passed_args->filter & FILTER_RES ) {
+ 			ext = mime_to_ext(mime);
+-			add_res(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++			add_resV4(size, duration, bitrate, sampleFrequency, nrAudioChannels,
+ 			        resolution, dlna_buf, mime, detailID, ext, passed_args);
+ 			if( *mime == 'i' ) {
+ 				int srcw, srch;
+ 				if( resolution && (sscanf(resolution, "%6dx%6d", &srcw, &srch) == 2) )
+ 				{
+ 					if( srcw > 4096 || srch > 4096 )
+-						add_resized_res(srcw, srch, 4096, 4096, "JPEG_LRG", detailID, passed_args);
++						add_resized_resV4(srcw, srch, 4096, 4096, "JPEG_LRG", detailID, passed_args);
+ 					if( srcw > 1024 || srch > 768 )
+-						add_resized_res(srcw, srch, 1024, 768, "JPEG_MED", detailID, passed_args);
++						add_resized_resV4(srcw, srch, 1024, 768, "JPEG_MED", detailID, passed_args);
+ 					if( srcw > 640 || srch > 480 )
+-						add_resized_res(srcw, srch, 640, 480, "JPEG_SM", detailID, passed_args);
++						add_resized_resV4(srcw, srch, 640, 480, "JPEG_SM", detailID, passed_args);
+ 				}
+ 				if( !(passed_args->flags & FLAG_RESIZE_THUMBS) && NON_ZERO(tn) && IS_ZERO(rotate) ) {
+ 					ret = strcatf(str, "&lt;res protocolInfo=\"http-get:*:%s:%s\"&gt;"
+ 					                   "http://%s:%d/Thumbnails/%s.jpg"
+ 					                   "&lt;/res&gt;",
+-					                   mime, "DLNA.ORG_PN=JPEG_TN;DLNA.ORG_CI=1", lan_addr[passed_args->iface].str,
++					                   mime, "DLNA.ORG_PN=JPEG_TN;DLNA.ORG_CI=1", lan_addr[passed_args->iface].str4,
+ 					                   runtime_vars.port, detailID);
+ 				}
+ 				else
+-					add_resized_res(srcw, srch, 160, 160, "JPEG_TN", detailID, passed_args);
++					add_resized_resV4(srcw, srch, 160, 160, "JPEG_TN", detailID, passed_args);
+ 			}
+ 			else if( *mime == 'v' ) {
+ 				switch( passed_args->client ) {
+@@ -1039,7 +1114,7 @@
+ 					     strncmp(dlna_pn, "AVC_TS_HP_HD_AC3", 16) == 0))
+ 					{
+ 						sprintf(dlna_buf, "DLNA.ORG_PN=%s;DLNA.ORG_OP=01;DLNA.ORG_CI=1", "MPEG_PS_NTSC");
+-						add_res(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++						add_resV4(size, duration, bitrate, sampleFrequency, nrAudioChannels,
+ 						        resolution, dlna_buf, mime, detailID, ext, passed_args);
+ 					}
+ 					break;
+@@ -1051,13 +1126,13 @@
+ 						if( strncmp(dlna_pn, "MPEG_TS_SD_NA", 13) != 0 )
+ 						{
+ 							sprintf(dlna_buf, "DLNA.ORG_PN=%s;DLNA.ORG_OP=01;DLNA.ORG_CI=1", "MPEG_TS_SD_NA");
+-							add_res(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++							add_resV4(size, duration, bitrate, sampleFrequency, nrAudioChannels,
+ 							        resolution, dlna_buf, mime, detailID, ext, passed_args);
+ 						}
+ 						if( strncmp(dlna_pn, "MPEG_TS_SD_EU", 13) != 0 )
+ 						{
+ 							sprintf(dlna_buf, "DLNA.ORG_PN=%s;DLNA.ORG_OP=01;DLNA.ORG_CI=1", "MPEG_TS_SD_EU");
+-							add_res(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++							add_resV4(size, duration, bitrate, sampleFrequency, nrAudioChannels,
+ 							        resolution, dlna_buf, mime, detailID, ext, passed_args);
+ 						}
+ 					}
+@@ -1072,13 +1147,13 @@
+ 						if( !dlna_pn || strncmp(dlna_pn, "MPEG_PS_NTSC", 12) != 0 )
+ 						{
+ 							sprintf(dlna_buf, "DLNA.ORG_PN=%s;DLNA.ORG_OP=01;DLNA.ORG_CI=1", "MPEG_PS_NTSC");
+-							add_res(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++							add_resV4(size, duration, bitrate, sampleFrequency, nrAudioChannels,
+ 						        	resolution, dlna_buf, mime, detailID, ext, passed_args);
+ 						}
+ 						if( !dlna_pn || strncmp(dlna_pn, "MPEG_PS_PAL", 11) != 0 )
+ 						{
+ 							sprintf(dlna_buf, "DLNA.ORG_PN=%s;DLNA.ORG_OP=01;DLNA.ORG_CI=1", "MPEG_PS_PAL");
+-							add_res(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++							add_resV4(size, duration, bitrate, sampleFrequency, nrAudioChannels,
+ 						        	resolution, dlna_buf, mime, detailID, ext, passed_args);
+ 						}
+ 					}
+@@ -1092,7 +1167,7 @@
+ 					     strncmp(dlna_pn, "AVC_TS_HP_HD_AC3", 16) == 0))
+ 					{
+ 					        sprintf(dlna_buf, "DLNA.ORG_PN=AVC_TS_HD_50_AC3%s", dlna_pn + 16);
+-						add_res(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++						add_resV4(size, duration, bitrate, sampleFrequency, nrAudioChannels,
+ 						        resolution, dlna_buf, mime, detailID, ext, passed_args);
+ 					}
+ 					break;
+@@ -1107,12 +1182,12 @@
+ 							ret = strcatf(str, "&lt;res protocolInfo=\"http-get:*:text/srt:*\"&gt;"
+ 									     "http://%s:%d/Captions/%s.srt"
+ 									   "&lt;/res&gt;",
+-									   lan_addr[passed_args->iface].str, runtime_vars.port, detailID);
++									   lan_addr[passed_args->iface].str4, runtime_vars.port, detailID);
+ 						if( passed_args->filter & FILTER_SEC_CAPTION_INFO_EX )
+ 							ret = strcatf(str, "&lt;sec:CaptionInfoEx sec:type=\"srt\"&gt;"
+ 							                     "http://%s:%d/Captions/%s.srt"
+ 							                   "&lt;/sec:CaptionInfoEx&gt;",
+-							                   lan_addr[passed_args->iface].str, runtime_vars.port, detailID);
++							                   lan_addr[passed_args->iface].str4, runtime_vars.port, detailID);
+ 					}
+ 					free(alt_title);
+ 					break;
+@@ -1126,7 +1201,7 @@
+ 				ret = strcatf(str, "&lt;res protocolInfo=\"http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN\"&gt;"
+ 				                   "http://%s:%d/AlbumArt/%s-%s.jpg"
+ 				                   "&lt;/res&gt;",
+-				                   lan_addr[passed_args->iface].str, runtime_vars.port, album_art, detailID);
++				                   lan_addr[passed_args->iface].str4, runtime_vars.port, album_art, detailID);
+ 				if (passed_args->client == ESamsungSeriesCDE ) {
+ 					ret = strcatf(str, "&lt;res dlna:profileID=\"JPEG_SM\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\""
+ 							   " protocolInfo=\"http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;"
+@@ -1134,7 +1209,7 @@
+ 							   "http://%s:%d/AlbumArt/%s-%s.jpg"
+ 							   "&lt;/res&gt;",
+ 							   DLNA_FLAG_DLNA_V1_5|DLNA_FLAG_TM_B|DLNA_FLAG_TM_I, 0,
+-							   lan_addr[passed_args->iface].str, runtime_vars.port, album_art, detailID);
++							   lan_addr[passed_args->iface].str4, runtime_vars.port, album_art, detailID);
+ 				}
+ 			} else if( passed_args->filter & FILTER_UPNP_ALBUMARTURI ) {
+ 				ret = strcatf(str, "&lt;upnp:albumArtURI");
+@@ -1142,7 +1217,7 @@
+ 					ret = strcatf(str, " dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\"");
+ 				}
+ 				ret = strcatf(str, "&gt;http://%s:%d/AlbumArt/%s-%s.jpg&lt;/upnp:albumArtURI&gt;",
+-				                   lan_addr[passed_args->iface].str, runtime_vars.port, album_art, detailID);
++				                   lan_addr[passed_args->iface].str4, runtime_vars.port, album_art, detailID);
+ 			}
+ 		}
+ 		if( (passed_args->flags & FLAG_MS_PFS) && *mime == 'i' ) {
+@@ -1154,12 +1229,12 @@
+ 				ret = strcatf(str, "&lt;upnp:albumArtURI&gt;"
+ 				                   "http://%s:%d/Thumbnails/%s.jpg"
+ 				                   "&lt;/upnp:albumArtURI&gt;",
+-				                   lan_addr[passed_args->iface].str, runtime_vars.port, detailID);
++				                   lan_addr[passed_args->iface].str4, runtime_vars.port, detailID);
+ 			} else {
+ 				ret = strcatf(str, "&lt;upnp:albumArtURI&gt;"
+ 				                   "http://%s:%d/Resized/%s.jpg?width=160,height=160"
+ 				                   "&lt;/upnp:albumArtURI&gt;",
+-				                   lan_addr[passed_args->iface].str, runtime_vars.port, detailID);
++				                   lan_addr[passed_args->iface].str4, runtime_vars.port, detailID);
+ 			}
+ 		}
+ 		ret = strcatf(str, "&lt;/item&gt;");
+@@ -1203,7 +1278,446 @@
+ 				ret = strcatf(str, "dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\"");
+ 			}
+ 			ret = strcatf(str, "&gt;http://%s:%d/AlbumArt/%s-%s.jpg&lt;/upnp:albumArtURI&gt;",
+-			                   lan_addr[passed_args->iface].str, runtime_vars.port, album_art, detailID);
++			                   lan_addr[passed_args->iface].str4, runtime_vars.port, album_art, detailID);
++		}
++		if( passed_args->filter & FILTER_AV_MEDIA_CLASS ) {
++			char class;
++			if( strncmp(id, MUSIC_ID, sizeof(MUSIC_ID)) == 0 )
++				class = 'M';
++			else if( strncmp(id, VIDEO_ID, sizeof(VIDEO_ID)) == 0 )
++				class = 'V';
++			else if( strncmp(id, IMAGE_ID, sizeof(IMAGE_ID)) == 0 )
++				class = 'P';
++			else
++				class = 0;
++			if( class )
++				ret = strcatf(str, "&lt;av:mediaClass xmlns:av=\"urn:schemas-sony-com:av\"&gt;"
++				                    "%c&lt;/av:mediaClass&gt;", class);
++		}
++		ret = strcatf(str, "&lt;/container&gt;");
++	}
++
++	return 0;
++}
++
++static int
++callbackV6(void *args, int argc, char **argv, char **azColName)
++{
++	struct Response *passed_args = (struct Response *)args;
++	char *id = argv[0], *parent = argv[1], *refID = argv[2], *detailID = argv[3], *class = argv[4], *size = argv[5], *title = argv[6],
++	     *duration = argv[7], *bitrate = argv[8], *sampleFrequency = argv[9], *artist = argv[10], *album = argv[11],
++	     *genre = argv[12], *comment = argv[13], *nrAudioChannels = argv[14], *track = argv[15], *date = argv[16], *resolution = argv[17],
++	     *tn = argv[18], *creator = argv[19], *dlna_pn = argv[20], *mime = argv[21], *album_art = argv[22], *rotate = argv[23];
++	char dlna_buf[128];
++	const char *ext;
++	struct string_s *str = passed_args->str;
++	int ret = 0;
++
++	/* Make sure we have at least 8KB left of allocated memory to finish the response. */
++	if( str->off > (str->size - 8192) )
++	{
++#if MAX_RESPONSE_SIZE > 0
++		if( (str->size+DEFAULT_RESP_SIZE) <= MAX_RESPONSE_SIZE )
++		{
++#endif
++			str->data = realloc(str->data, (str->size+DEFAULT_RESP_SIZE));
++			if( str->data )
++			{
++				str->size += DEFAULT_RESP_SIZE;
++				DPRINTF(E_DEBUG, L_HTTP, "UPnP SOAP response enlarged to %lu. [%d results so far]\n",
++					(unsigned long)str->size, passed_args->returned);
++			}
++			else
++			{
++				DPRINTF(E_ERROR, L_HTTP, "UPnP SOAP response was too big, and realloc failed!\n");
++				return -1;
++			}
++#if MAX_RESPONSE_SIZE > 0
++		}
++		else
++		{
++			DPRINTF(E_ERROR, L_HTTP, "UPnP SOAP response cut short, to not exceed the max response size [%lld]!\n", (long long int)MAX_RESPONSE_SIZE);
++			return -1;
++		}
++#endif
++	}
++	passed_args->returned++;
++	passed_args->flags &= ~RESPONSE_FLAGS;
++
++	if( strncmp(class, "item", 4) == 0 )
++	{
++		uint32_t dlna_flags = DLNA_FLAG_DLNA_V1_5|DLNA_FLAG_HTTP_STALLING|DLNA_FLAG_TM_B;
++		char *alt_title = NULL;
++		/* We may need special handling for certain MIME types */
++		if( *mime == 'v' )
++		{
++			dlna_flags |= DLNA_FLAG_TM_S;
++			if( passed_args->flags & FLAG_MIME_AVI_DIVX )
++			{
++				if( strcmp(mime, "video/x-msvideo") == 0 )
++				{
++					if( creator )
++						strcpy(mime+6, "divx");
++					else
++						strcpy(mime+6, "avi");
++				}
++			}
++			else if( passed_args->flags & FLAG_MIME_AVI_AVI )
++			{
++				if( strcmp(mime, "video/x-msvideo") == 0 )
++				{
++					strcpy(mime+6, "avi");
++				}
++			}
++			else if( passed_args->client == EFreeBox && dlna_pn )
++			{
++				if( strncmp(dlna_pn, "AVC_TS", 6) == 0 ||
++				    strncmp(dlna_pn, "MPEG_TS", 7) == 0 )
++				{
++					strcpy(mime+6, "mp2t");
++				}
++			}
++			if( !(passed_args->flags & FLAG_DLNA) )
++			{
++				if( strcmp(mime+6, "vnd.dlna.mpeg-tts") == 0 )
++				{
++					strcpy(mime+6, "mpeg");
++				}
++			}
++			if( (passed_args->flags & FLAG_CAPTION_RES) ||
++			    (passed_args->filter & (FILTER_SEC_CAPTION_INFO_EX|FILTER_PV_SUBTITLE)) )
++			{
++				if( sql_get_int_field(db, "SELECT ID from CAPTIONS where ID = '%s'", detailID) > 0 )
++					passed_args->flags |= FLAG_HAS_CAPTIONS;
++			}
++			/* From what I read, Samsung TV's expect a [wrong] MIME type of x-mkv. */
++			if( passed_args->flags & FLAG_SAMSUNG )
++			{
++				if( strcmp(mime+6, "x-matroska") == 0 )
++				{
++					strcpy(mime+8, "mkv");
++				}
++			}
++			/* LG hack: subtitles won't get used unless dc:title contains a dot. */
++			else if( passed_args->client == ELGDevice && (passed_args->flags & FLAG_HAS_CAPTIONS) )
++			{
++				ret = asprintf(&alt_title, "%s.", title);
++				if( ret > 0 )
++					title = alt_title;
++				else
++					alt_title = NULL;
++			}
++			/* Asus OPlay reboots with titles longer than 23 characters with some file types. */
++			else if( passed_args->client == EAsusOPlay && (passed_args->flags & FLAG_HAS_CAPTIONS) )
++			{
++				if( strlen(title) > 23 )
++					title[23] = '\0';
++			}
++			/* Hyundai hack: Only titles with a media extension get recognized. */
++			else if( passed_args->client == EHyundaiTV )
++			{
++				ext = mime_to_ext(mime);
++				ret = asprintf(&alt_title, "%s.%s", title, ext);
++				if( ret > 0 )
++					title = alt_title;
++				else
++					alt_title = NULL;
++			}
++		}
++		else if( *mime == 'a' )
++		{
++			dlna_flags |= DLNA_FLAG_TM_S;
++			if( strcmp(mime+6, "x-flac") == 0 )
++			{
++				if( passed_args->flags & FLAG_MIME_FLAC_FLAC )
++				{
++					strcpy(mime+6, "flac");
++				}
++			}
++			else if( strcmp(mime+6, "x-wav") == 0 )
++			{
++				if( passed_args->flags & FLAG_MIME_WAV_WAV )
++				{
++					strcpy(mime+6, "wav");
++				}
++			}
++		}
++		else
++			dlna_flags |= DLNA_FLAG_TM_I;
++
++		if( passed_args->flags & FLAG_SKIP_DLNA_PN )
++			dlna_pn = NULL;
++
++		if( dlna_pn )
++			snprintf(dlna_buf, sizeof(dlna_buf), "DLNA.ORG_PN=%s;"
++			                                     "DLNA.ORG_OP=01;"
++			                                     "DLNA.ORG_CI=0;"
++			                                     "DLNA.ORG_FLAGS=%08X%024X",
++			                                     dlna_pn, dlna_flags, 0);
++		else if( passed_args->flags & FLAG_DLNA )
++			snprintf(dlna_buf, sizeof(dlna_buf), "DLNA.ORG_OP=01;"
++			                                     "DLNA.ORG_CI=0;"
++			                                     "DLNA.ORG_FLAGS=%08X%024X",
++			                                     dlna_flags, 0);
++		else
++			strcpy(dlna_buf, "*");
++
++		ret = strcatf(str, "&lt;item id=\"%s\" parentID=\"%s\" restricted=\"1\"", id, parent);
++		if( refID && (passed_args->filter & FILTER_REFID) ) {
++			ret = strcatf(str, " refID=\"%s\"", refID);
++		}
++		ret = strcatf(str, "&gt;"
++		                   "&lt;dc:title&gt;%s&lt;/dc:title&gt;"
++		                   "&lt;upnp:class&gt;object.%s&lt;/upnp:class&gt;",
++		                   title, class);
++		if( comment && (passed_args->filter & FILTER_DC_DESCRIPTION) ) {
++			ret = strcatf(str, "&lt;dc:description&gt;%.384s&lt;/dc:description&gt;", comment);
++		}
++		if( creator && (passed_args->filter & FILTER_DC_CREATOR) ) {
++			ret = strcatf(str, "&lt;dc:creator&gt;%s&lt;/dc:creator&gt;", creator);
++		}
++		if( date && (passed_args->filter & FILTER_DC_DATE) ) {
++			ret = strcatf(str, "&lt;dc:date&gt;%s&lt;/dc:date&gt;", date);
++		}
++		if( (passed_args->filter & FILTER_BOOKMARK_MASK) ) {
++			/* Get bookmark */
++			int sec = sql_get_int_field(db, "SELECT SEC from BOOKMARKS where ID = '%s'", detailID);
++			if( sec > 0 && (passed_args->filter & FILTER_UPNP_LASTPLAYBACKPOSITION) ) {
++				/* This format is wrong according to the UPnP/AV spec.  It should be in duration format,
++				** so HH:MM:SS. But Kodi seems to be the only user of this tag, and it only works with a
++				** raw seconds value.
++				** If Kodi gets fixed, we can use duration_str(sec * 1000) here */
++				ret = strcatf(str, "&lt;upnp:lastPlaybackPosition&gt;%d&lt;/upnp:lastPlaybackPosition&gt;",
++				              sec);
++			}
++			if( passed_args->filter & FILTER_SEC_DCM_INFO )
++				ret = strcatf(str, "&lt;sec:dcmInfo&gt;CREATIONDATE=0,FOLDER=%s,BM=%d&lt;/sec:dcmInfo&gt;",
++				              title, sec);
++			if( passed_args->filter & FILTER_UPNP_PLAYBACKCOUNT ) {
++				ret = strcatf(str, "&lt;upnp:playbackCount&gt;%d&lt;/upnp:playbackCount&gt;",
++				              sql_get_int_field(db, "SELECT WATCH_COUNT from BOOKMARKS where ID = '%s'", detailID));
++			}
++		}
++		if( artist ) {
++			if( (*mime == 'v') && (passed_args->filter & FILTER_UPNP_ACTOR) ) {
++				ret = strcatf(str, "&lt;upnp:actor&gt;%s&lt;/upnp:actor&gt;", artist);
++			}
++			if( passed_args->filter & FILTER_UPNP_ARTIST ) {
++				ret = strcatf(str, "&lt;upnp:artist&gt;%s&lt;/upnp:artist&gt;", artist);
++			}
++		}
++		if( album && (passed_args->filter & FILTER_UPNP_ALBUM) ) {
++			ret = strcatf(str, "&lt;upnp:album&gt;%s&lt;/upnp:album&gt;", album);
++		}
++		if( genre && (passed_args->filter & FILTER_UPNP_GENRE) ) {
++			ret = strcatf(str, "&lt;upnp:genre&gt;%s&lt;/upnp:genre&gt;", genre);
++		}
++		if( strncmp(id, MUSIC_PLIST_ID, strlen(MUSIC_PLIST_ID)) == 0 ) {
++			track = strrchr(id, '$')+1;
++		}
++		if( NON_ZERO(track) && (passed_args->filter & FILTER_UPNP_ORIGINALTRACKNUMBER) ) {
++			ret = strcatf(str, "&lt;upnp:originalTrackNumber&gt;%s&lt;/upnp:originalTrackNumber&gt;", track);
++		}
++		if( passed_args->filter & FILTER_RES ) {
++			ext = mime_to_ext(mime);
++			add_resV6(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++			        resolution, dlna_buf, mime, detailID, ext, passed_args);
++			if( *mime == 'i' ) {
++				int srcw, srch;
++				if( resolution && (sscanf(resolution, "%6dx%6d", &srcw, &srch) == 2) )
++				{
++					if( srcw > 4096 || srch > 4096 )
++						add_resized_resV6(srcw, srch, 4096, 4096, "JPEG_LRG", detailID, passed_args);
++					if( srcw > 1024 || srch > 768 )
++						add_resized_resV6(srcw, srch, 1024, 768, "JPEG_MED", detailID, passed_args);
++					if( srcw > 640 || srch > 480 )
++						add_resized_resV6(srcw, srch, 640, 480, "JPEG_SM", detailID, passed_args);
++				}
++				if( !(passed_args->flags & FLAG_RESIZE_THUMBS) && NON_ZERO(tn) && IS_ZERO(rotate) ) {
++					ret = strcatf(str, "&lt;res protocolInfo=\"http-get:*:%s:%s\"&gt;"
++					                   "http://[%s]:%d/Thumbnails/%s.jpg"
++					                   "&lt;/res&gt;",
++					                   mime, "DLNA.ORG_PN=JPEG_TN;DLNA.ORG_CI=1", lan_addr[passed_args->iface].str6,
++					                   runtime_vars.port, detailID);
++				}
++				else
++					add_resized_resV6(srcw, srch, 160, 160, "JPEG_TN", detailID, passed_args);
++			}
++			else if( *mime == 'v' ) {
++				switch( passed_args->client ) {
++				case EToshibaTV:
++					if( dlna_pn &&
++					    (strncmp(dlna_pn, "MPEG_TS_HD_NA", 13) == 0 ||
++					     strncmp(dlna_pn, "MPEG_TS_SD_NA", 13) == 0 ||
++					     strncmp(dlna_pn, "AVC_TS_MP_HD_AC3", 16) == 0 ||
++					     strncmp(dlna_pn, "AVC_TS_HP_HD_AC3", 16) == 0))
++					{
++						sprintf(dlna_buf, "DLNA.ORG_PN=%s;DLNA.ORG_OP=01;DLNA.ORG_CI=1", "MPEG_PS_NTSC");
++						add_resV6(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++						        resolution, dlna_buf, mime, detailID, ext, passed_args);
++					}
++					break;
++				case ESonyBDP:
++					if( dlna_pn &&
++					    (strncmp(dlna_pn, "AVC_TS", 6) == 0 ||
++					     strncmp(dlna_pn, "MPEG_TS", 7) == 0) )
++					{
++						if( strncmp(dlna_pn, "MPEG_TS_SD_NA", 13) != 0 )
++						{
++							sprintf(dlna_buf, "DLNA.ORG_PN=%s;DLNA.ORG_OP=01;DLNA.ORG_CI=1", "MPEG_TS_SD_NA");
++							add_resV6(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++							        resolution, dlna_buf, mime, detailID, ext, passed_args);
++						}
++						if( strncmp(dlna_pn, "MPEG_TS_SD_EU", 13) != 0 )
++						{
++							sprintf(dlna_buf, "DLNA.ORG_PN=%s;DLNA.ORG_OP=01;DLNA.ORG_CI=1", "MPEG_TS_SD_EU");
++							add_resV6(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++							        resolution, dlna_buf, mime, detailID, ext, passed_args);
++						}
++					}
++					else if( (dlna_pn &&
++					          (strncmp(dlna_pn, "AVC_MP4", 7) == 0 ||
++					           strncmp(dlna_pn, "MPEG4_P2_MP4", 12) == 0)) ||
++					         strcmp(mime+6, "x-matroska") == 0 ||
++					         strcmp(mime+6, "x-msvideo") == 0 ||
++					         strcmp(mime+6, "mpeg") == 0 )
++					{
++						strcpy(mime+6, "avi");
++						if( !dlna_pn || strncmp(dlna_pn, "MPEG_PS_NTSC", 12) != 0 )
++						{
++							sprintf(dlna_buf, "DLNA.ORG_PN=%s;DLNA.ORG_OP=01;DLNA.ORG_CI=1", "MPEG_PS_NTSC");
++							add_resV6(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++						        	resolution, dlna_buf, mime, detailID, ext, passed_args);
++						}
++						if( !dlna_pn || strncmp(dlna_pn, "MPEG_PS_PAL", 11) != 0 )
++						{
++							sprintf(dlna_buf, "DLNA.ORG_PN=%s;DLNA.ORG_OP=01;DLNA.ORG_CI=1", "MPEG_PS_PAL");
++							add_resV6(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++						        	resolution, dlna_buf, mime, detailID, ext, passed_args);
++						}
++					}
++					break;
++				case ESonyBravia:
++					/* BRAVIA KDL-##*X### series TVs do natively support AVC/AC3 in TS, but
++					   require profile to be renamed (applies to _T and _ISO variants also) */
++					if( dlna_pn &&
++					    (strncmp(dlna_pn, "AVC_TS_MP_SD_AC3", 16) == 0 ||
++					     strncmp(dlna_pn, "AVC_TS_MP_HD_AC3", 16) == 0 ||
++					     strncmp(dlna_pn, "AVC_TS_HP_HD_AC3", 16) == 0))
++					{
++					        sprintf(dlna_buf, "DLNA.ORG_PN=AVC_TS_HD_50_AC3%s", dlna_pn + 16);
++						add_resV6(size, duration, bitrate, sampleFrequency, nrAudioChannels,
++						        resolution, dlna_buf, mime, detailID, ext, passed_args);
++					}
++					break;
++				case ESamsungSeriesCDE:
++				case ELGDevice:
++				case ELGNetCastDevice:
++				case EAsusOPlay:
++				default:
++					if( passed_args->flags & FLAG_HAS_CAPTIONS )
++					{
++						if( passed_args->flags & FLAG_CAPTION_RES )
++							ret = strcatf(str, "&lt;res protocolInfo=\"http-get:*:text/srt:*\"&gt;"
++									     "http://[%s]:%d/Captions/%s.srt"
++									   "&lt;/res&gt;",
++									   lan_addr[passed_args->iface].str6, runtime_vars.port, detailID);
++						if( passed_args->filter & FILTER_SEC_CAPTION_INFO_EX )
++							ret = strcatf(str, "&lt;sec:CaptionInfoEx sec:type=\"srt\"&gt;"
++							                     "http://[%s]:%d/Captions/%s.srt"
++							                   "&lt;/sec:CaptionInfoEx&gt;",
++							                   lan_addr[passed_args->iface].str6, runtime_vars.port, detailID);
++					}
++					free(alt_title);
++					break;
++				}
++			}
++		}
++		if( NON_ZERO(album_art) )
++		{
++			/* Video and audio album art is handled differently */
++			if( *mime == 'v' && (passed_args->filter & FILTER_RES) && !(passed_args->flags & FLAG_MS_PFS) ) {
++				ret = strcatf(str, "&lt;res protocolInfo=\"http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN\"&gt;"
++				                   "http://[%s]:%d/AlbumArt/%s-%s.jpg"
++				                   "&lt;/res&gt;",
++				                   lan_addr[passed_args->iface].str6, runtime_vars.port, album_art, detailID);
++				if (passed_args->client == ESamsungSeriesCDE ) {
++					ret = strcatf(str, "&lt;res dlna:profileID=\"JPEG_SM\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\""
++							   " protocolInfo=\"http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;"
++							   "DLNA.ORG_OP=01;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=%08X%024X\" resolution=\"320x320\"&gt;"
++							   "http://[%s]:%d/AlbumArt/%s-%s.jpg"
++							   "&lt;/res&gt;",
++							   DLNA_FLAG_DLNA_V1_5|DLNA_FLAG_TM_B|DLNA_FLAG_TM_I, 0,
++							   lan_addr[passed_args->iface].str6, runtime_vars.port, album_art, detailID);
++				}
++			} else if( passed_args->filter & FILTER_UPNP_ALBUMARTURI ) {
++				ret = strcatf(str, "&lt;upnp:albumArtURI");
++				if( passed_args->filter & FILTER_UPNP_ALBUMARTURI_DLNA_PROFILEID ) {
++					ret = strcatf(str, " dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\"");
++				}
++				ret = strcatf(str, "&gt;http://[%s]:%d/AlbumArt/%s-%s.jpg&lt;/upnp:albumArtURI&gt;",
++				                   lan_addr[passed_args->iface].str6, runtime_vars.port, album_art, detailID);
++			}
++		}
++		if( (passed_args->flags & FLAG_MS_PFS) && *mime == 'i' ) {
++			if( passed_args->client == EMediaRoom && !album )
++				ret = strcatf(str, "&lt;upnp:album&gt;%s&lt;/upnp:album&gt;", "[No Keywords]");
++
++			/* EVA2000 doesn't seem to handle embedded thumbnails */
++			if( !(passed_args->flags & FLAG_RESIZE_THUMBS) && NON_ZERO(tn) && IS_ZERO(rotate) ) {
++				ret = strcatf(str, "&lt;upnp:albumArtURI&gt;"
++				                   "http://[%s]:%d/Thumbnails/%s.jpg"
++				                   "&lt;/upnp:albumArtURI&gt;",
++				                   lan_addr[passed_args->iface].str6, runtime_vars.port, detailID);
++			} else {
++				ret = strcatf(str, "&lt;upnp:albumArtURI&gt;"
++				                   "http://[%s]:%d/Resized/%s.jpg?width=160,height=160"
++				                   "&lt;/upnp:albumArtURI&gt;",
++				                   lan_addr[passed_args->iface].str6, runtime_vars.port, detailID);
++			}
++		}
++		ret = strcatf(str, "&lt;/item&gt;");
++	}
++	else if( strncmp(class, "container", 9) == 0 )
++	{
++		ret = strcatf(str, "&lt;container id=\"%s\" parentID=\"%s\" restricted=\"1\" ", id, parent);
++		if( passed_args->filter & FILTER_SEARCHABLE ) {
++			ret = strcatf(str, "searchable=\"%d\" ", check_magic_container(id, passed_args->flags) ? 0 : 1);
++		}
++		if( passed_args->filter & FILTER_CHILDCOUNT ) {
++			ret = strcatf(str, "childCount=\"%d\"", get_child_count(id, check_magic_container(id, passed_args->flags)));
++		}
++		/* If the client calls for BrowseMetadata on root, we have to include our "upnp:searchClass"'s, unless they're filtered out */
++		if( passed_args->requested == 1 && strcmp(id, "0") == 0 && (passed_args->filter & FILTER_UPNP_SEARCHCLASS) ) {
++			ret = strcatf(str, "&gt;"
++			                   "&lt;upnp:searchClass includeDerived=\"1\"&gt;object.item.audioItem&lt;/upnp:searchClass&gt;"
++			                   "&lt;upnp:searchClass includeDerived=\"1\"&gt;object.item.imageItem&lt;/upnp:searchClass&gt;"
++			                   "&lt;upnp:searchClass includeDerived=\"1\"&gt;object.item.videoItem&lt;/upnp:searchClass");
++		}
++		ret = strcatf(str, "&gt;"
++		                   "&lt;dc:title&gt;%s&lt;/dc:title&gt;"
++		                   "&lt;upnp:class&gt;object.%s&lt;/upnp:class&gt;",
++		                   title, class);
++		if( (passed_args->filter & FILTER_UPNP_STORAGEUSED) || strcmp(class+10, "storageFolder") == 0 ) {
++			/* TODO: Implement real folder size tracking */
++			ret = strcatf(str, "&lt;upnp:storageUsed&gt;%s&lt;/upnp:storageUsed&gt;", (size ? size : "-1"));
++		}
++		if( creator && (passed_args->filter & FILTER_DC_CREATOR) ) {
++			ret = strcatf(str, "&lt;dc:creator&gt;%s&lt;/dc:creator&gt;", creator);
++		}
++		if( genre && (passed_args->filter & FILTER_UPNP_GENRE) ) {
++			ret = strcatf(str, "&lt;upnp:genre&gt;%s&lt;/upnp:genre&gt;", genre);
++		}
++		if( artist && (passed_args->filter & FILTER_UPNP_ARTIST) ) {
++			ret = strcatf(str, "&lt;upnp:artist&gt;%s&lt;/upnp:artist&gt;", artist);
++		}
++		if( NON_ZERO(album_art) && (passed_args->filter & FILTER_UPNP_ALBUMARTURI) ) {
++			ret = strcatf(str, "&lt;upnp:albumArtURI ");
++			if( passed_args->filter & FILTER_UPNP_ALBUMARTURI_DLNA_PROFILEID ) {
++				ret = strcatf(str, "dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\"");
++			}
++			ret = strcatf(str, "&gt;http://[%s]:%d/AlbumArt/%s-%s.jpg&lt;/upnp:albumArtURI&gt;",
++			                   lan_addr[passed_args->iface].str6, runtime_vars.port, album_art, detailID);
+ 		}
+ 		if( passed_args->filter & FILTER_AV_MEDIA_CLASS ) {
+ 			char class;
+@@ -1334,7 +1848,7 @@
+ 				      "from OBJECTS o left join DETAILS d on (d.ID = o.DETAIL_ID)"
+ 				      " where OBJECT_ID = '%q';",
+ 				      objectid_sql, parentid_sql, refid_sql, id);
+-		ret = sqlite3_exec(db, sql, callback, (void *) &args, &zErrMsg);
++		ret = sqlite3_exec(db, sql, h->socket_type==4?callbackV4:callbackV6, (void *) &args, &zErrMsg);
+ 		totalMatches = args.returned;
+ 	}
+ 	else
+@@ -1413,7 +1927,7 @@
+ 				      objectid_sql, parentid_sql, refid_sql,
+ 				      where, THISORNUL(orderBy), StartingIndex, RequestedCount);
+ 		DPRINTF(E_DEBUG, L_HTTP, "Browse SQL: %s\n", sql);
+-		ret = sqlite3_exec(db, sql, callback, (void *) &args, &zErrMsg);
++		ret = sqlite3_exec(db, sql, h->socket_type==4?callbackV4:callbackV6, (void *) &args, &zErrMsg);
+ 	}
+ 	if( (ret != SQLITE_OK) && (zErrMsg != NULL) )
+ 	{
+@@ -1850,7 +2364,7 @@
+ 	                                      " where OBJECT_ID = '%q' and (%s) ", ContainerID, where),
+ 	                      orderBy, StartingIndex, RequestedCount);
+ 	DPRINTF(E_DEBUG, L_HTTP, "Search SQL: %s\n", sql);
+-	ret = sqlite3_exec(db, sql, callback, (void *) &args, &zErrMsg);
++	ret = sqlite3_exec(db, sql, h->socket_type==4?callbackV4:callbackV6, (void *) &args, &zErrMsg);
+ 	if( (ret != SQLITE_OK) && (zErrMsg != NULL) )
+ 	{
+ 		DPRINTF(E_WARN, L_HTTP, "SQL error: %s\nBAD SQL: %s\n", zErrMsg, sql);
+diff -Nur a/utils.c b/utils.c
+--- a/utils.c	2017-10-09 14:43:31.568669146 +0800
++++ b/utils.c	2017-10-09 17:40:00.298439106 +0800
+@@ -400,7 +400,9 @@
+ 		ends_with(file, ".vob") || ends_with(file, ".ts")    ||
+ 		ends_with(file, ".flv") || ends_with(file, ".xvid")  ||
+ #ifdef TIVO_SUPPORT
++/*
+ 		ends_with(file, ".TiVo") ||
++*/
+ #endif
+ 		ends_with(file, ".mov") || ends_with(file, ".3gp"));
+ }

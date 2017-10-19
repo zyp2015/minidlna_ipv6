@@ -1,0 +1,13 @@
+Index: minidlna-1.1.4/utils.c
+===================================================================
+--- minidlna-1.1.4.orig/utils.c
++++ minidlna-1.1.4/utils.c
+@@ -402,7 +402,7 @@ is_audio(const char * file)
+ int
+ is_image(const char * file)
+ {
+-	return (ends_with(file, ".jpg") || ends_with(file, ".jpeg"));
++	return (ends_with(file, ".jpg") || ends_with(file, ".jpeg") || ends_with(file, ".png"));
+ }
+ 
+ int
